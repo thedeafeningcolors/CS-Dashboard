@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Juice - Customer Success Tracker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            margin: 0;
+            color: #f0f0f0;
+            font-size: 24px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            color: #b0b0b0;
+        }
+        
+        select, input[type="text"], input[type="date"], input[type="number"], textarea {
+            padding: 8px 12px;
+            border: 1px solid #424242;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #2196f3;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #1976d2;
+        }
+        
+        button.secondary {
+            background-color: #424242;
+        }
+        
+        button.secondary:hover {
+            background-color: #616161;
+        }
+        
+        button.success {
+            background-color: #66bb6a;
+        }
+        
+        button.success:hover {
+            background-color: #4caf50;
+        }
+        
+        button.danger {
+            background-color: #ef5350;
+        }
+        
+        button.danger:hover {
+            background-color: #f44336;
+        }
+        
+        .customer-list {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: #333333;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #f0f0f0;
+            border-bottom: 2px solid #424242;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #3a3a3a;
+            color: #e0e0e0;
+        }
+        
+        tr:hover {
+            background-color: #333333;
+            cursor: pointer;
+        }
+        
+        .contract-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .contract-status.expired { background-color: #4a1c1c; color: #ef5350; }
+        .contract-status.year-1 { background-color: #1e3a5f; color: #64b5f6; }
+        .contract-status.year-2 { background-color: #1b4332; color: #66bb6a; }
+        .contract-status.year-3 { background-color: #4a3c28; color: #ffa726; }
+        
+        /* Journey View Styles */
+        .journey-view {
+            display: none;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .journey-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #424242;
+        }
+        
+        .journey-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .journey-header h2 {
+            color: #f0f0f0;
+        }
+        
+        .customer-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            color: #f0f0f0;
+        }
+        
+        .journey-timeline {
+            position: relative;
+            padding: 40px 0;
+            overflow-x: auto;
+        }
+        
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #424242;
+            transform: translateY(-50%);
+        }
+        
+        .timeline-progress {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            background-color: #2196f3;
+            transform: translateY(-50%);
+            transition: width 0.3s ease;
+        }
+        
+        .timeline-stages {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            min-width: 1200px;
+        }
+        
+        .stage-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            flex: 1;
+            max-width: 150px;
+        }
+        
+        .stage-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #424242;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            z-index: 2;
+            transition: all 0.2s;
+            border: 2px solid #1a1a1a;
+        }
+        
+        .stage-circle.completed {
+            background-color: #66bb6a;
+            color: white;
+        }
+        
+        .stage-circle.in-progress {
+            background-color: #ffa726;
+            color: #1a1a1a;
+        }
+        
+        .stage-circle:hover {
+            transform: scale(1.1);
+        }
+        
+        .stage-label {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 12px;
+            max-width: 120px;
+            color: #b0b0b0;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: #2a2a2a;
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #424242;
+        }
+        
+        .modal-header h3 {
+            color: #f0f0f0;
+            margin: 0;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .close-button:hover {
+            color: #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #b0b0b0;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .notes-section {
+            margin-top: 20px;
+        }
+        
+        .notes-section h4 {
+            color: #f0f0f0;
+        }
+        
+        .note-item {
+            background-color: #1a1a1a;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .note-meta {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .add-note-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #424242;
+        }
+        
+        textarea {
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .file-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #424242;
+        }
+        
+        .file-section h4 {
+            color: #f0f0f0;
+        }
+        
+        .file-list {
+            margin-top: 10px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #1a1a1a;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-info a {
+            color: #64b5f6;
+            text-decoration: none;
+        }
+        
+        .file-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        .data-status {
+            background-color: #1b4332;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+            color: #a5d6a7;
+        }
+        
+        .error-status {
+            background-color: #4a1c1c;
+            color: #ef5350;
+        }
+        
+        .notes-display {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .notes-display h4 {
+            margin: 0 0 10px 0;
+            color: #ffa726;
+        }
+        
+        .cris-notes {
+            white-space: pre-wrap;
+            color: #e0e0e0;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #424242;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Input placeholder styling */
+        input::placeholder,
+        textarea::placeholder {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Customer Success Tracker</h1>
+            <div>
+                <button onclick="importCSV()" class="secondary">Import CSV</button>
+                <button onclick="showAddCustomerModal()" class="success">+ Add Customer</button>
+                <button onclick="checkFreshSales()" class="secondary" disabled>Check FreshSales</button>
+            </div>
+        </div>
+        
+        <div id="dataStatus" class="data-status"></div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="searchInput" placeholder="District name..." onkeyup="filterCustomers()">
+            </div>
+            <div class="filter-group">
+                <label>State:</label>
+                <select id="stateFilter" onchange="filterCustomers()">
+                    <option value="">All States</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Contract Status:</label>
+                <select id="statusFilter" onchange="filterCustomers()">
+                    <option value="">All</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Year 1">Year 1</option>
+                    <option value="Year 2">Year 2</option>
+                    <option value="Year 3">Year 3</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Type:</label>
+                <select id="typeFilter" onchange="filterCustomers()">
+                    <option value="">All</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Library">Library</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="customerList" class="customer-list">
+            <div class="loading">Loading customers...</div>
+        </div>
+        
+        <div id="journeyView" class="journey-view"></div>
+    </div>
+    
+    <!-- Stage Detail Modal -->
+    <div id="stageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Stage Details</h3>
+                <button class="close-button" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Customer</h3>
+                <button class="close-button" onclick="closeAddCustomerModal()">&times;</button>
+            </div>
+            <div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Account/District Name:</label>
+                        <input type="text" id="newAccount">
+                    </div>
+                    <div class="form-group">
+                        <label>State:</label>
+                        <input type="text" id="newState" placeholder="e.g., PA" maxlength="2">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Type:</label>
+                        <select id="newType">
+                            <option value="Normal">Normal</option>
+                            <option value="Library">Library</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Purchase Vehicle:</label>
+                        <input type="text" id="newPurchaseVehicle" placeholder="e.g., WiLS, NYBOCES, N/A">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contract Status:</label>
+                        <select id="newContractStatus">
+                            <option value="Year 1">Year 1</option>
+                            <option value="Year 2">Year 2</option>
+                            <option value="Year 3">Year 3</option>
+                            <option value="Expired (In Talks)">Expired (In Talks)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount:</label>
+                        <input type="text" id="newAmount" placeholder="e.g., $25,000">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Account Start:</label>
+                        <input type="date" id="newAccountStart">
+                    </div>
+                    <div class="form-group">
+                        <label>Account End:</label>
+                        <input type="date" id="newAccountEnd">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Students:</label>
+                        <input type="number" id="newStudents">
+                    </div>
+                    <div class="form-group">
+                        <label>Teachers:</label>
+                        <input type="number" id="newTeachers">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notes:</label>
+                    <textarea id="newNotes" rows="3"></textarea>
+                </div>
+                
+                <button onclick="addNewCustomer()" class="success">Add Customer</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        let customers = [];
+        let currentCustomer = null;
+        let currentStage = null;
+        
+        // Timeline definitions
+        const purchasingStages = [
+            { id: 'finance_compliance', label: 'Finance & Compliance Docs', icon: '📋' },
+            { id: 'invoice_approval', label: 'Invoice to Finance', icon: '💼' },
+            { id: 'invoice_sent', label: 'Invoice to Customer', icon: '📧' },
+            { id: 'invoice_paid', label: 'Invoice Paid', icon: '💵' }
+        ];
+        
+        const onboardingStages = [
+            { id: 'scheduled', label: 'Onboarding Scheduled', icon: '📅' },
+            { id: 'preference', label: 'Preference Selected', icon: '⚙️' },
+            { id: 'tech_notified', label: 'Tech Team Notified', icon: '👨‍💻' },
+            { id: 'implementation', label: 'Implementation', icon: '🔧' },
+            { id: 'go_live', label: 'Go Live', icon: '🚀' },
+            { id: 'training', label: 'Training Complete', icon: '📚' }
+        ];
+        
+        const accountCharStages = [
+            { id: 'basic_info', label: 'Basic Info', icon: '📝' },
+            { id: 'contacts', label: 'Key Contacts', icon: '👥' },
+            { id: 'technical', label: 'Technical Details', icon: '💻' },
+            { id: 'preferences', label: 'Preferences', icon: '⚙️' }
+        ];
+        
+        // Keep old stages for backward compatibility
+        const journeyStages = [
+            { id: 'invoiced', label: 'Invoiced', icon: '📧' },
+            { id: 'scheduled', label: 'Onboarding Scheduled', icon: '📅' },
+            { id: 'preference', label: 'Preference Selected', icon: '⚙️' },
+            { id: 'tech_notified', label: 'Tech Team Notified', icon: '👨‍💻' },
+            { id: 'implementation', label: 'Implementation', icon: '🔧' },
+            { id: 'go_live', label: 'Go Live', icon: '🚀' },
+            { id: 'training', label: 'Training Complete', icon: '📚' },
+            { id: 'active', label: 'Active & Monitored', icon: '✅' },
+            { id: 'renewal_start', label: 'Renewal Discussions', icon: '🔄' },
+            { id: 'renewal_quote', label: 'Renewal Quote Sent', icon: '💰' },
+            { id: 'renewed', label: 'Renewed', icon: '🎉' }
+        ];
+        
+        // Initialize on load
+        window.onload = function() {
+            initializeApp();
+        };
+        
+        function initializeApp() {
+            loadCustomersFromLocalStorage();
+            renderCustomerList();
+            populateFilters();
+        }
+        
+        function loadCustomersFromLocalStorage() {
+            const stored = localStorage.getItem('juiceCustomers');
+            if (stored) {
+                customers = JSON.parse(stored);
+            }
+        }
+        
+        function saveCustomersToLocalStorage() {
+            localStorage.setItem('juiceCustomers', JSON.stringify(customers));
+            showDataStatus('Data saved locally', false);
+        }
+        
+        function showDataStatus(message, isError = false) {
+            const status = document.getElementById('dataStatus');
+            status.textContent = message;
+            status.style.display = 'block';
+            status.className = isError ? 'data-status error-status' : 'data-status';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+        
+        function renderCustomerList() {
+            const listContainer = document.getElementById('customerList');
+            
+            if (!customers || customers.length === 0) {
+                listContainer.innerHTML = '<div class="loading">No customers yet. Click "Import CSV" or "Add Customer" to get started.</div>';
+                return;
+            }
+            
+            const filtered = filterCustomersData();
+            
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<div class="loading">No customers found</div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>State</th>
+                            <th>Type</th>
+                            <th>Contract Status</th>
+                            <th>End Date</th>
+                            <th>Students</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            filtered.forEach(customer => {
+                const endDate = customer.accountEnd ? new Date(customer.accountEnd).toLocaleDateString() : 'N/A';
+                const statusClass = customer.contractStatus.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '');
+                
+                html += `
+                    <tr onclick="showCustomerJourney(${customer.id})">
+                        <td>${customer.account}</td>
+                        <td>${customer.state}</td>
+                        <td>${customer.type}</td>
+                        <td><span class="contract-status ${statusClass}">${customer.contractStatus}</span></td>
+                        <td>${endDate}</td>
+                        <td>${customer.students || '-'}</td>
+                        <td>${customer.amount || '-'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            listContainer.innerHTML = html;
+        }
+        
+        function filterCustomersData() {
+            if (!customers || customers.length === 0) return [];
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const stateFilter = document.getElementById('stateFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            
+            return customers.filter(customer => {
+                const matchesSearch = customer.account && customer.account.toLowerCase().includes(searchTerm);
+                const matchesState = !stateFilter || customer.state === stateFilter;
+                const matchesStatus = !statusFilter || (customer.contractStatus && customer.contractStatus.includes(statusFilter));
+                const matchesType = !typeFilter || customer.type === typeFilter;
+                
+                return matchesSearch && matchesState && matchesStatus && matchesType;
+            });
+        }
+        
+        function filterCustomers() {
+            renderCustomerList();
+        }
+        
+        function populateFilters() {
+            if (!customers || customers.length === 0) return;
+            
+            // Populate state filter
+            const states = [...new Set(customers.map(c => c.state).filter(s => s))].sort();
+            const stateSelect = document.getElementById('stateFilter');
+            stateSelect.innerHTML = '<option value="">All States</option>';
+            states.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+        }
+        
+        function showCustomerJourney(customerId) {
+            currentCustomer = customers.find(c => c.id === customerId);
+            if (!currentCustomer) return;
+            
+            document.getElementById('customerList').style.display = 'none';
+            document.getElementById('journeyView').style.display = 'block';
+            
+            renderJourneyView();
+        }
+        
+        function renderJourneyView() {
+            const container = document.getElementById('journeyView');
+            const endDate = currentCustomer.accountEnd ? new Date(currentCustomer.accountEnd).toLocaleDateString() : 'N/A';
+            const startDate = currentCustomer.accountStart ? new Date(currentCustomer.accountStart).toLocaleDateString() : 'N/A';
+            
+            let html = `
+                <div class="journey-header">
+                    <div class="journey-header-top">
+                        <div>
+                            <h2>${currentCustomer.account}</h2>
+                            <p style="color: #7f8c8d; margin: 5px 0;">
+                                ${currentCustomer.contractStatus} • ${currentCustomer.state}
+                            </p>
+                        </div>
+                        <div>
+                            <button onclick="backToList()">← Back to List</button>
+                            <button onclick="deleteCustomer(${currentCustomer.id})" class="danger" style="margin-left: 10px;">Delete Customer</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Overview (combined details + summary) -->
+                    <div style="background-color: #1a1a1a; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #3a3a3a;">
+                        <h3 style="color: #f0f0f0; margin: 0 0 15px 0;">Account Overview</h3>
+                        
+                        <!-- Basic Details -->
+                        <div class="customer-details" style="margin-bottom: 20px;">
+                            <div class="detail-item">
+                                <span class="detail-label">Type</span>
+                                <span class="detail-value">${currentCustomer.type}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Purchase Vehicle</span>
+                                <span class="detail-value">${currentCustomer.purchaseVehicle || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Contract Period</span>
+                                <span class="detail-value">${startDate} - ${endDate}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Students</span>
+                                <span class="detail-value">${currentCustomer.students || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Teachers</span>
+                                <span class="detail-value">${currentCustomer.teachers || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Amount</span>
+                                <span class="detail-value">${currentCustomer.amount || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Per Student Price</span>
+                                <span class="detail-value">${currentCustomer.perStdtPrice || '-'}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Summary Report -->
+                        <div style="border-top: 1px solid #3a3a3a; padding-top: 20px;">
+                            ${generateSummaryReport()}
+                        </div>
+                    </div>
+                    
+                    ${currentCustomer.notes ? `
+                        <div class="notes-display">
+                            <h4>Notes</h4>
+                            <div class="cris-notes">${currentCustomer.notes}</div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Three Timelines -->
+                <h3 style="color: #f0f0f0; margin: 30px 0 20px 0;">Pre-Activation Progress</h3>
+                
+                <!-- Purchasing Timeline -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #64b5f6; margin-bottom: 15px;">Purchasing Timeline</h4>
+                    <div class="journey-timeline">
+                        <div class="timeline-track"></div>
+                        <div class="timeline-progress" style="width: ${calculateTimelineProgress('purchasing')}%"></div>
+                        <div class="timeline-stages">
+                `;
+                
+                purchasingStages.forEach((stage, index) => {
+                    const stageData = currentCustomer.purchasingStages?.[stage.id] || {};
+                    const status = stageData.completed ? 'completed' : (stageData.inProgress ? 'in-progress' : '');
+                    
+                    html += `
+                        <div class="stage-node" onclick="showPurchasingStageDetails('${stage.id}')">
+                            <div class="stage-circle ${status}">
+                                ${stageData.completed ? '✓' : (stageData.inProgress ? '⏳' : stage.icon)}
+                            </div>
+                            <div class="stage-label">${stage.label}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                    
+                    <!-- Purchasing Activity Log (Collapsible) -->
+                    <div style="margin-top: 15px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #3a3a3a;">
+                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleActivityLog('purchasing')">
+                            <h5 style="margin: 0; color: #64b5f6;">Purchasing Activity Log</h5>
+                            <span id="purchasingToggle" style="color: #64b5f6;">▼</span>
+                        </div>
+                        <div id="purchasingActivityLog" style="display: block; padding: 0 15px 15px 15px; max-height: 300px; overflow-y: auto;">
+                            ${renderActivityLogForTimeline('purchasing')}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onboarding Timeline -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #66bb6a; margin-bottom: 15px;">Onboarding Timeline</h4>
+                    <div class="journey-timeline">
+                        <div class="timeline-track"></div>
+                        <div class="timeline-progress" style="width: ${calculateTimelineProgress('onboarding')}%"></div>
+                        <div class="timeline-stages">
+                `;
+                
+                onboardingStages.forEach((stage, index) => {
+                    const stageData = currentCustomer.onboardingStages?.[stage.id] || {};
+                    const status = stageData.completed ? 'completed' : (stageData.inProgress ? 'in-progress' : '');
+                    
+                    html += `
+                        <div class="stage-node" onclick="showOnboardingStageDetails('${stage.id}')">
+                            <div class="stage-circle ${status}">
+                                ${stageData.completed ? '✓' : (stageData.inProgress ? '⏳' : stage.icon)}
+                            </div>
+                            <div class="stage-label">${stage.label}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Characteristics Timeline -->
+                <div style="margin-bottom: 40px;">
+                    <h4 style="color: #ffa726; margin-bottom: 15px;">Account Characteristics Timeline</h4>
+                    <div class="journey-timeline">
+                        <div class="timeline-track"></div>
+                        <div class="timeline-progress" style="width: ${calculateTimelineProgress('accountChar')}%"></div>
+                        <div class="timeline-stages">
+                `;
+                
+                accountCharStages.forEach((stage, index) => {
+                    const stageData = currentCustomer.accountCharStages?.[stage.id] || {};
+                    const status = stageData.completed ? 'completed' : (stageData.inProgress ? 'in-progress' : '');
+                    
+                    html += `
+                        <div class="stage-node" onclick="showAccountCharStageDetails('${stage.id}')">
+                            <div class="stage-circle ${status}">
+                                ${stageData.completed ? '✓' : (stageData.inProgress ? '⏳' : stage.icon)}
+                            </div>
+                            <div class="stage-label">${stage.label}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function generateSummaryReport() {
+            let report = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
+            
+            // Purchasing Summary
+            report += '<div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">';
+            report += '<h4 style="color: #64b5f6; margin-bottom: 15px;">Purchasing Status</h4>';
+            
+            const purchData = currentCustomer.purchasingStages || {};
+            
+            // Finance & Compliance Docs
+            if (purchData.finance_compliance?.data) {
+                const fcData = purchData.finance_compliance.data;
+                
+                // Compliance categories
+                if (fcData.categories) {
+                    const cats = [];
+                    if (fcData.categories.privacy) cats.push('Privacy');
+                    if (fcData.categories.singleSource) cats.push('Single Source');
+                    if (fcData.categories.districtVendor) cats.push('District + Vendor');
+                    if (fcData.categories.other) cats.push('Other');
+                    if (cats.length > 0) {
+                        report += `<div style="margin-bottom: 10px;"><strong>Compliance:</strong> ${cats.join(', ')}</div>`;
+                    }
+                }
+                
+                // Document counts
+                const docCounts = [];
+                if (fcData.complianceDocs?.length > 0) docCounts.push(`${fcData.complianceDocs.length} compliance docs`);
+                if (fcData.quotes?.length > 0) docCounts.push(`${fcData.quotes.length} quotes`);
+                if (fcData.purchaseOrders?.length > 0) docCounts.push(`${fcData.purchaseOrders.length} POs`);
+                if (docCounts.length > 0) {
+                    report += `<div style="margin-bottom: 10px;"><strong>Documents:</strong> ${docCounts.join(', ')}</div>`;
+                }
+            }
+            
+            // Invoice Details
+            if (purchData.invoice_sent?.data) {
+                const inv = purchData.invoice_sent.data;
+                if (inv.invoiceId) report += `<div style="margin-bottom: 5px;"><strong>Invoice ID:</strong> ${inv.invoiceId}</div>`;
+                if (inv.contractStart && inv.contractEnd) {
+                    report += `<div style="margin-bottom: 5px;"><strong>Contract Period:</strong> ${new Date(inv.contractStart).toLocaleDateString()} - ${new Date(inv.contractEnd).toLocaleDateString()}</div>`;
+                }
+                if (inv.teacherAccounts) report += `<div style="margin-bottom: 5px;"><strong>Teacher Accounts:</strong> ${inv.teacherAccounts}</div>`;
+                if (inv.studentAccounts) report += `<div style="margin-bottom: 5px;"><strong>Student Accounts:</strong> ${inv.studentAccounts}</div>`;
+            }
+            
+            // Payment Status
+            purchasingStages.forEach(stage => {
+                if (stage.id.includes('paid') && purchData[stage.id]?.data?.status) {
+                    report += `<div style="margin-bottom: 5px;"><strong>${stage.label}:</strong> ${purchData[stage.id].data.status}`;
+                    if (purchData[stage.id].data.date) {
+                        report += ` (${new Date(purchData[stage.id].data.date).toLocaleDateString()})`;
+                    }
+                    report += '</div>';
+                }
+            });
+            
+            report += '</div>';
+            
+            // Onboarding Summary (placeholder for now)
+            report += '<div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">';
+            report += '<h4 style="color: #66bb6a; margin-bottom: 15px;">Onboarding Status</h4>';
+            report += '<p style="color: #888;">Not yet started</p>';
+            report += '</div>';
+            
+            // Account Info Summary (placeholder for now)
+            report += '<div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">';
+            report += '<h4 style="color: #ffa726; margin-bottom: 15px;">Account Information</h4>';
+            report += '<p style="color: #888;">Not yet collected</p>';
+            report += '</div>';
+            
+            report += '</div>';
+            return report;
+        }
+        
+        function renderActivityLog() {
+            if (!currentCustomer.activityLog || currentCustomer.activityLog.length === 0) {
+                return '<p style="color: #888;">No activity recorded yet</p>';
+            }
+            
+            let html = '';
+            // Show most recent first
+            const sortedActivities = [...currentCustomer.activityLog].reverse();
+            
+            sortedActivities.forEach(activity => {
+                const date = new Date(activity.timestamp);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+                
+                html += `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #333; border-radius: 5px; border-left: 3px solid #2196f3;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">
+                            ${dateStr} at ${timeStr} • ${activity.by}
+                        </div>
+                        <div style="color: #f0f0f0;">
+                            <strong>${activity.action}:</strong> ${activity.details}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            return html;
+        }
+        
+        function calculateProgress() {
+            if (!currentCustomer.stages) return 0;
+            
+            const completedStages = journeyStages.filter(stage => 
+                currentCustomer.stages[stage.id]?.completed
+            ).length;
+            
+            return (completedStages / journeyStages.length) * 100;
+        }
+        
+        function calculateTimelineProgress(timeline) {
+            let stages, stageData;
+            
+            switch(timeline) {
+                case 'purchasing':
+                    stages = purchasingStages;
+                    stageData = currentCustomer.purchasingStages || {};
+                    break;
+                case 'onboarding':
+                    stages = onboardingStages;
+                    stageData = currentCustomer.onboardingStages || {};
+                    break;
+                case 'accountChar':
+                    stages = accountCharStages;
+                    stageData = currentCustomer.accountCharStages || {};
+                    break;
+                default:
+                    return 0;
+            }
+            
+            // Find the furthest completed stage (not just count)
+            let lastCompletedIndex = -1;
+            stages.forEach((stage, index) => {
+                if (stageData[stage.id]?.completed) {
+                    lastCompletedIndex = index;
+                }
+            });
+            
+            // Progress bar shows up to the last completed stage
+            if (lastCompletedIndex === -1) return 0;
+            return ((lastCompletedIndex + 1) / stages.length) * 100;
+        }
+        
+        function backToList() {
+            document.getElementById('journeyView').style.display = 'none';
+            document.getElementById('customerList').style.display = 'block';
+        }
+        
+        function showPurchasingStageDetails(stageId) {
+            currentStage = stageId;
+            const stage = purchasingStages.find(s => s.id === stageId);
+            const stageData = currentCustomer.purchasingStages?.[stageId] || {};
+            
+            const modal = document.getElementById('stageModal');
+            document.getElementById('modalTitle').textContent = stage.label;
+            
+            let bodyHtml = '';
+            
+            // Different content based on stage
+            switch(stageId) {
+                case 'finance_compliance':
+                    bodyHtml = renderFinanceComplianceStage(stageData);
+                    break;
+                case 'invoice_approval':
+                case 'invoice_paid':
+                    bodyHtml = renderYesNoStage(stageId, stageData, stage.label);
+                    break;
+                case 'invoice_sent':
+                    bodyHtml = renderInvoiceSentStage(stageData);
+                    break;
+                default:
+                    bodyHtml = `<div style="color: #888;">Stage details not implemented yet.</div>`;
+            }
+            
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            modal.style.display = 'block';
+        }
+        
+        function renderComplianceStage(stageData) {
+            const complianceData = stageData.data || {};
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Any Compliance Docs Necessary?</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="complianceNeeded" value="yes" 
+                            ${complianceData.needed === 'yes' ? 'checked' : ''} 
+                            onchange="toggleComplianceDetails(this.value)"> Yes</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="complianceNeeded" value="no" 
+                            ${complianceData.needed === 'no' ? 'checked' : ''} 
+                            onchange="toggleComplianceDetails(this.value)"> No</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="complianceNeeded" value="other" 
+                            ${complianceData.needed === 'other' ? 'checked' : ''} 
+                            onchange="toggleComplianceDetails(this.value)"> Other</label>
+                    </div>
+                    <textarea id="complianceNotes" placeholder="Notes..." style="width: 100%; margin-top: 10px;">${complianceData.notes || ''}</textarea>
+                </div>
+                
+                <div id="complianceDetails" style="display: ${complianceData.needed === 'yes' ? 'block' : 'none'};">
+                    <h4>Compliance Categories</h4>
+                    <div>
+                        <label><input type="checkbox" id="privacy" ${complianceData.categories?.privacy ? 'checked' : ''}> Privacy</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="singleSource" ${complianceData.categories?.singleSource ? 'checked' : ''}> Single Source</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="districtVendor" ${complianceData.categories?.districtVendor ? 'checked' : ''}> District + Vendor</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="otherCategory" ${complianceData.categories?.other ? 'checked' : ''}> Other</label>
+                    </div>
+                    
+                    <div id="complianceDocs" style="margin-top: 20px;">
+                        ${renderComplianceDocs(complianceData.documents || [])}
+                    </div>
+                    <button onclick="addComplianceDoc()" class="secondary" style="margin-top: 10px;">+ Add Document</button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveComplianceData()" class="success">Save Compliance Info</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function renderFinanceComplianceStage(stageData) {
+            const data = stageData.data || {};
+            let html = '';
+            
+            // Show completion info if stage is completed
+            if (stageData.completed) {
+                html += `
+                    <div style="background: #1b4332; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>✓ Completed</strong> on ${new Date(stageData.date).toLocaleString()} by ${stageData.by}
+                        <button onclick="markStageIncomplete('purchasingStages', 'finance_compliance')" class="danger" style="float: right; padding: 4px 8px; font-size: 12px;">Mark Incomplete</button>
+                    </div>
+                `;
+            }
+            
+            // Compliance Documents Section
+            html += `
+                <div style="margin-bottom: 30px;">
+                    <h4>Compliance Documents</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label><input type="checkbox" id="privacy" ${data.categories?.privacy ? 'checked' : ''}> Privacy</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="singleSource" ${data.categories?.singleSource ? 'checked' : ''}> Single Source</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="districtVendor" ${data.categories?.districtVendor ? 'checked' : ''}> District + Vendor</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="otherCompliance" ${data.categories?.other ? 'checked' : ''}> Other</label>
+                    </div>
+                    
+                    <div id="complianceDocs">
+                        ${renderComplianceDocs(data.complianceDocs || [])}
+                    </div>
+                    <button onclick="addComplianceDoc()" class="secondary" style="margin-top: 10px;">+ Add Compliance Document</button>
+                </div>
+                
+                <!-- Price Quotes Section -->
+                <div style="margin-bottom: 30px;">
+                    <h4>Price Quotes</h4>
+                    <div id="quotesList">
+                        ${renderQuotes(data.quotes || [])}
+                    </div>
+                    <button onclick="addQuote()" class="secondary">+ Add Quote</button>
+                </div>
+                
+                <!-- Purchase Orders Section -->
+                <div style="margin-bottom: 30px;">
+                    <h4>Purchase Orders</h4>
+                    <div id="posList">
+                        ${renderPOs(data.purchaseOrders || [])}
+                    </div>
+                    <button onclick="addPO()" class="secondary">+ Add PO</button>
+                </div>
+                
+                <!-- General Notes -->
+                <div style="margin-bottom: 20px;">
+                    <h4>Additional Notes</h4>
+                    <textarea id="financeComplianceNotes" style="width: 100%; min-height: 80px;" placeholder="Any additional notes about finance or compliance documents...">${data.notes || ''}</textarea>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveFinanceComplianceData()" class="success">Save All Documents</button>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function renderComplianceDocs(docs) {
+            if (!docs.length) return '<p style="color: #888;">No compliance documents added yet</p>';
+            
+            let html = '';
+            docs.forEach((doc, index) => {
+                html += `
+                    <div style="background: #1a1a1a; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                        <input type="text" value="${doc.name}" placeholder="Document name" 
+                            onchange="updateComplianceDoc(${index}, 'name', this.value)" 
+                            style="width: 100%; margin-bottom: 5px;">
+                        <input type="text" value="${doc.link || ''}" placeholder="File/link URL" 
+                            onchange="updateComplianceDoc(${index}, 'link', this.value)" 
+                            style="width: 100%; margin-bottom: 5px;">
+                        <textarea placeholder="Notes" onchange="updateComplianceDoc(${index}, 'notes', this.value)" 
+                            style="width: 100%; margin-bottom: 5px;">${doc.notes || ''}</textarea>
+                        <button onclick="removeComplianceDoc(${index})" class="danger" style="font-size: 12px;">Remove</button>
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        function renderInvoiceSentStage(stageData) {
+            const invoiceData = stageData.data || {};
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Invoice Sent to Customer?</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="invoiceSent" value="yes" ${invoiceData.sent === 'yes' ? 'checked' : ''}> Yes</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="invoiceSent" value="no" ${invoiceData.sent === 'no' ? 'checked' : ''}> No</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="invoiceSent" value="other" ${invoiceData.sent === 'other' ? 'checked' : ''}> Other</label>
+                    </div>
+                    <textarea id="invoiceSentNotes" placeholder="Notes..." style="width: 100%; margin-top: 10px;">${invoiceData.notes || ''}</textarea>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4>Invoice Details</h4>
+                    <div class="form-group">
+                        <label>Invoice PDF/Link:</label>
+                        <input type="text" id="invoiceLink" value="${invoiceData.link || ''}" placeholder="Upload PDF or Google Drive link">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contract Start Date:</label>
+                            <input type="date" id="contractStart" value="${invoiceData.contractStart || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Contract End Date:</label>
+                            <input type="date" id="contractEnd" value="${invoiceData.contractEnd || ''}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Invoice ID:</label>
+                            <input type="text" id="invoiceId" value="${invoiceData.invoiceId || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label># of Teacher Accounts:</label>
+                            <input type="number" id="teacherAccounts" value="${invoiceData.teacherAccounts || ''}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label># of Student Accounts:</label>
+                        <input type="number" id="studentAccounts" value="${invoiceData.studentAccounts || ''}">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveInvoiceData()" class="success">Save Invoice Info</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function renderOtherDocsStage(stageData) {
+            const otherDocsData = stageData.data || {};
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Other Finance Documents?</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="checkbox" id="hasQuotes" ${otherDocsData.hasQuotes ? 'checked' : ''} onchange="toggleOtherDocsSection('quotes')"> Price Quotes</label>
+                        <label style="margin-left: 20px;"><input type="checkbox" id="hasPOs" ${otherDocsData.hasPOs ? 'checked' : ''} onchange="toggleOtherDocsSection('pos')"> Purchase Orders</label>
+                    </div>
+                </div>
+                
+                <div id="quotesSection" style="display: ${otherDocsData.hasQuotes ? 'block' : 'none'};">
+                    <h4>Price Quotes</h4>
+                    <div id="quotesList">
+                        ${renderQuotes(otherDocsData.quotes || [])}
+                    </div>
+                    <button onclick="addQuote()" class="secondary">+ Add Quote</button>
+                </div>
+                
+                <div id="posSection" style="display: ${otherDocsData.hasPOs ? 'block' : 'none'}; margin-top: 20px;">
+                    <h4>Purchase Orders</h4>
+                    <div id="posList">
+                        ${renderPOs(otherDocsData.purchaseOrders || [])}
+                    </div>
+                    <button onclick="addPO()" class="secondary">+ Add PO</button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveOtherDocsData()" class="success">Save Documents</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function renderQuotes(quotes) {
+            if (!quotes.length) return '<p style="color: #888;">No quotes added yet</p>';
+            
+            let html = '';
+            quotes.forEach((quote, index) => {
+                const perStudent = quote.students && quote.amount ? 
+                    '$' + (parseFloat(quote.amount.replace(/[$,]/g, '')) / parseInt(quote.students)).toFixed(2) : 
+                    'N/A';
+                
+                html += `
+                    <div style="background: #1a1a1a; padding: 15px; margin: 10px 0; border-radius: 4px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date:</label>
+                                <input type="date" value="${quote.date || ''}" onchange="updateQuote(${index}, 'date', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount:</label>
+                                <input type="text" value="${quote.amount || ''}" placeholder="$25,000" onchange="updateQuote(${index}, 'amount', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label># Teachers:</label>
+                                <input type="number" value="${quote.teachers || ''}" onchange="updateQuote(${index}, 'teachers', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label># Students:</label>
+                                <input type="number" value="${quote.students || ''}" onchange="updateQuote(${index}, 'students', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Duration:</label>
+                                <input type="number" value="${quote.duration || ''}" onchange="updateQuote(${index}, 'duration', this.value)">
+                                <select onchange="updateQuote(${index}, 'durationType', this.value)">
+                                    <option value="years" ${quote.durationType === 'years' ? 'selected' : ''}>Years</option>
+                                    <option value="months" ${quote.durationType === 'months' ? 'selected' : ''}>Months</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Per Student (Annual):</label>
+                                <input type="text" value="${perStudent}" readonly style="background: #2a2a2a;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>PDF/Link:</label>
+                            <input type="text" value="${quote.link || ''}" placeholder="Upload PDF or Google Drive link" onchange="updateQuote(${index}, 'link', this.value)">
+                        </div>
+                        <button onclick="removeQuote(${index})" class="danger" style="font-size: 12px;">Remove Quote</button>
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        function renderPOs(pos) {
+            if (!pos.length) return '<p style="color: #888;">No purchase orders added yet</p>';
+            
+            let html = '';
+            pos.forEach((po, index) => {
+                html += `
+                    <div style="background: #1a1a1a; padding: 15px; margin: 10px 0; border-radius: 4px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date Received:</label>
+                                <input type="date" value="${po.dateReceived || ''}" onchange="updatePO(${index}, 'dateReceived', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>PO #:</label>
+                                <input type="text" value="${po.poNumber || ''}" onchange="updatePO(${index}, 'poNumber', this.value)">
+                            </div>
+                        </div>
+                        <h5 style="margin: 15px 0 10px 0;">Accounts Payable Contact</h5>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Name:</label>
+                                <input type="text" value="${po.apName || ''}" onchange="updatePO(${index}, 'apName', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" value="${po.apEmail || ''}" onchange="updatePO(${index}, 'apEmail', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Phone:</label>
+                                <input type="tel" value="${po.apPhone || ''}" onchange="updatePO(${index}, 'apPhone', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Address:</label>
+                                <input type="text" value="${po.apAddress || ''}" onchange="updatePO(${index}, 'apAddress', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes:</label>
+                            <textarea onchange="updatePO(${index}, 'notes', this.value)">${po.notes || ''}</textarea>
+                        </div>
+                        <button onclick="removePO(${index})" class="danger" style="font-size: 12px;">Remove PO</button>
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        function renderYesNoStage(stageId, stageData, label) {
+            const data = stageData.data || {};
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <strong>${label}?</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="${stageId}_status" value="yes" ${data.status === 'yes' ? 'checked' : ''}> Yes</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="no" ${data.status === 'no' ? 'checked' : ''}> No</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="other" ${data.status === 'other' ? 'checked' : ''}> Other</label>
+                    </div>
+                    <textarea id="${stageId}_notes" placeholder="Notes..." style="width: 100%; margin-top: 10px;">${data.notes || ''}</textarea>
+                    
+                    ${data.status === 'yes' ? `
+                        <div style="margin-top: 10px;">
+                            <label>Date:</label>
+                            <input type="date" id="${stageId}_date" value="${data.date || new Date().toISOString().split('T')[0]}">
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveYesNoData('${stageId}')" class="success">Save</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function closeModal() {
+            document.getElementById('stageModal').style.display = 'none';
+        }
+        
+        function markStageComplete(stageId) {
+            if (!currentCustomer) return;
+            
+            if (!currentCustomer.stages) currentCustomer.stages = {};
+            
+            currentCustomer.stages[stageId] = {
+                completed: true,
+                date: new Date().toISOString(),
+                by: 'Current User' // In real app, get from login
+            };
+            
+            // Update current stage to next one
+            const stageIndex = journeyStages.findIndex(s => s.id === stageId);
+            if (stageIndex < journeyStages.length - 1) {
+                const nextStageId = journeyStages[stageIndex + 1].id;
+                currentCustomer.stages[nextStageId] = { inProgress: true };
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function addNote(stageId) {
+            const noteText = document.getElementById('newNote').value.trim();
+            if (!noteText) return;
+            
+            if (!currentCustomer.stageNotes) currentCustomer.stageNotes = {};
+            if (!currentCustomer.stageNotes[stageId]) currentCustomer.stageNotes[stageId] = [];
+            
+            currentCustomer.stageNotes[stageId].push({
+                text: noteText,
+                date: new Date().toISOString(),
+                by: 'Current User' // In real app, get from login
+            });
+            
+            saveCustomersToLocalStorage();
+            showStageDetails(stageId);
+        }
+        
+        function addFile(stageId) {
+            const fileName = document.getElementById('newFileName').value.trim();
+            const fileUrl = document.getElementById('newFileUrl').value.trim();
+            
+            if (!fileName || !fileUrl) {
+                alert('Please enter both file name and URL');
+                return;
+            }
+            
+            if (!currentCustomer.stageFiles) currentCustomer.stageFiles = {};
+            if (!currentCustomer.stageFiles[stageId]) currentCustomer.stageFiles[stageId] = [];
+            
+            currentCustomer.stageFiles[stageId].push({
+                name: fileName,
+                url: fileUrl,
+                date: new Date().toISOString(),
+                by: 'Current User'
+            });
+            
+            saveCustomersToLocalStorage();
+            showStageDetails(stageId);
+        }
+        
+        function removeFile(stageId, fileIndex) {
+            if (confirm('Remove this file?')) {
+                currentCustomer.stageFiles[stageId].splice(fileIndex, 1);
+                saveCustomersToLocalStorage();
+                showStageDetails(stageId);
+            }
+        }
+        
+        function showAddCustomerModal() {
+            document.getElementById('addCustomerModal').style.display = 'block';
+            // Set default dates
+            const today = new Date();
+            document.getElementById('newAccountStart').value = today.toISOString().split('T')[0];
+            
+            const oneYear = new Date(today);
+            oneYear.setFullYear(oneYear.getFullYear() + 1);
+            document.getElementById('newAccountEnd').value = oneYear.toISOString().split('T')[0];
+        }
+        
+        function closeAddCustomerModal() {
+            document.getElementById('addCustomerModal').style.display = 'none';
+            // Clear form
+            document.querySelectorAll('#addCustomerModal input, #addCustomerModal textarea, #addCustomerModal select').forEach(input => {
+                input.value = '';
+            });
+        }
+        
+        function addNewCustomer() {
+            const account = document.getElementById('newAccount').value.trim();
+            const state = document.getElementById('newState').value.trim().toUpperCase();
+            
+            if (!account || !state) {
+                alert('Please fill in at least Account name and State');
+                return;
+            }
+            
+            const newCustomer = {
+                id: Date.now(),
+                account: account,
+                state: state,
+                type: document.getElementById('newType').value,
+                purchaseVehicle: document.getElementById('newPurchaseVehicle').value || 'N/A',
+                contractStatus: document.getElementById('newContractStatus').value,
+                accountEnd: document.getElementById('newAccountEnd').value,
+                accountStart: document.getElementById('newAccountStart').value,
+                students: document.getElementById('newStudents').value,
+                teachers: document.getElementById('newTeachers').value,
+                amount: document.getElementById('newAmount').value,
+                perStdtPrice: calculatePerStudentPrice(
+                    document.getElementById('newAmount').value,
+                    document.getElementById('newStudents').value
+                ),
+                notes: document.getElementById('newNotes').value,
+                stages: {
+                    invoiced: {
+                        completed: true,
+                        date: document.getElementById('newAccountStart').value,
+                        by: 'Current User'
+                    }
+                },
+                stageNotes: {},
+                stageFiles: {}
+            };
+            
+            customers.push(newCustomer);
+            saveCustomersToLocalStorage();
+            closeAddCustomerModal();
+            renderCustomerList();
+            populateFilters();
+        }
+        
+        function calculatePerStudentPrice(amount, students) {
+            if (!amount || !students) return 'N/A';
+            const cleanAmount = parseFloat(amount.replace(/[$,]/g, ''));
+            const studentCount = parseInt(students);
+            if (isNaN(cleanAmount) || isNaN(studentCount) || studentCount === 0) return 'N/A';
+            return '$' + (cleanAmount / studentCount).toFixed(2);
+        }
+        
+        function importCSV() {
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = event => {
+                    const csvData = event.target.result;
+                    parseAndImportCSV(csvData);
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        function parseAndImportCSV(csvData) {
+            const lines = csvData.split('\n');
+            const headers = lines[0].split('\t'); // Tab separated
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = lines[i].split('\t');
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header.trim()] = values[index]?.trim() || '';
+                });
+                
+                // Create customer object
+                const customer = {
+                    id: Date.now() + i,
+                    account: row['Account'],
+                    state: row['State'],
+                    type: row['Type'],
+                    purchaseVehicle: row['Purchase Vehicle'],
+                    contractStatus: row['Contract Status'],
+                    accountEnd: parseDate(row['Account End']),
+                    accountStart: parseDate(row['Account Start']),
+                    students: row['Students'],
+                    teachers: row['Teachers'],
+                    amount: row['Amount'],
+                    perStdtPrice: row['Per Stdt Price'],
+                    notes: row["Cris's Notes"],
+                    stages: {
+                        invoiced: {
+                            completed: true,
+                            date: parseDate(row['Account Start']),
+                            by: 'Import'
+                        }
+                    },
+                    stageNotes: {},
+                    stageFiles: {}
+                };
+                
+                customers.push(customer);
+            }
+            
+            saveCustomersToLocalStorage();
+            renderCustomerList();
+            populateFilters();
+            showDataStatus(`Imported ${lines.length - 1} customers successfully`);
+        }
+        
+        function parseDate(dateStr) {
+            if (!dateStr) return '';
+            
+            // Remove any quotes
+            dateStr = dateStr.replace(/['"]/g, '');
+            
+            // Handle MM/DD/YYYY format
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+                return `${year}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            }
+            
+            // Handle MM/DD/YY format
+            if (parts.length === 3 && parts[2].length === 2) {
+                return `20${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            }
+            
+            return dateStr;
+        }
+        
+        // Helper function to mark stages as incomplete
+        function markStageIncomplete(timeline, stageId) {
+            if (!currentCustomer[timeline] || !currentCustomer[timeline][stageId]) return;
+            
+            const stageName = findStageName(timeline, stageId);
+            currentCustomer[timeline][stageId].completed = false;
+            delete currentCustomer[timeline][stageId].date;
+            delete currentCustomer[timeline][stageId].by;
+            
+            logActivity(currentCustomer.id, 'Marked stage incomplete', stageName);
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function findStageName(timeline, stageId) {
+            let stages;
+            switch(timeline) {
+                case 'purchasingStages':
+                    stages = purchasingStages;
+                    break;
+                case 'onboardingStages':
+                    stages = onboardingStages;
+                    break;
+                case 'accountCharStages':
+                    stages = accountCharStages;
+                    break;
+                default:
+                    return stageId;
+            }
+            const stage = stages.find(s => s.id === stageId);
+            return stage ? stage.label : stageId;
+        }
+        function logActivity(customerId, action, details) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) return;
+            
+            if (!customer.activityLog) customer.activityLog = [];
+            
+            customer.activityLog.push({
+                timestamp: new Date().toISOString(),
+                action: action,
+                details: details,
+                by: 'Current User' // Will be replaced with actual user later
+            });
+            
+            // Keep only last 100 activities per customer to prevent bloat
+            if (customer.activityLog.length > 100) {
+                customer.activityLog = customer.activityLog.slice(-100);
+            }
+            
+            saveCustomersToLocalStorage();
+        }
+        function toggleComplianceDetails(value) {
+            document.getElementById('complianceDetails').style.display = value === 'yes' ? 'block' : 'none';
+        }
+        
+        function addComplianceDoc() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.compliance) currentCustomer.purchasingStages.compliance = { data: {} };
+            if (!currentCustomer.purchasingStages.compliance.data.documents) currentCustomer.purchasingStages.compliance.data.documents = [];
+            
+            currentCustomer.purchasingStages.compliance.data.documents.push({
+                name: '',
+                link: '',
+                notes: ''
+            });
+            
+            saveCustomersToLocalStorage();
+            showPurchasingStageDetails('compliance');
+        }
+        
+        function updateComplianceDoc(index, field, value) {
+            if (!currentCustomer.purchasingStages?.compliance?.data?.documents) return;
+            currentCustomer.purchasingStages.compliance.data.documents[index][field] = value;
+            saveCustomersToLocalStorage();
+        }
+        
+        function removeComplianceDoc(index) {
+            if (confirm('Remove this document?')) {
+                currentCustomer.purchasingStages.compliance.data.documents.splice(index, 1);
+                saveCustomersToLocalStorage();
+                showPurchasingStageDetails('compliance');
+            }
+        }
+        
+        function saveComplianceData() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.compliance) currentCustomer.purchasingStages.compliance = { data: {} };
+            
+            const data = currentCustomer.purchasingStages.compliance.data;
+            const previousData = {...data};
+            
+            data.needed = document.querySelector('input[name="complianceNeeded"]:checked')?.value || '';
+            data.notes = document.getElementById('complianceNotes').value;
+            
+            if (data.needed === 'yes') {
+                data.categories = {
+                    privacy: document.getElementById('privacy').checked,
+                    singleSource: document.getElementById('singleSource').checked,
+                    districtVendor: document.getElementById('districtVendor').checked,
+                    other: document.getElementById('otherCategory').checked
+                };
+            }
+            
+            // Log the activity
+            if (data.needed && !previousData.needed) {
+                logActivity(currentCustomer.id, 'Set compliance requirement', `Compliance docs: ${data.needed}`);
+            }
+            
+            // Mark as completed if answered
+            if (data.needed && !currentCustomer.purchasingStages.compliance.completed) {
+                currentCustomer.purchasingStages.compliance.completed = true;
+                currentCustomer.purchasingStages.compliance.date = new Date().toISOString();
+                currentCustomer.purchasingStages.compliance.by = 'Current User';
+                logActivity(currentCustomer.id, 'Completed stage', 'Compliance Docs');
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function saveInvoiceData() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.invoice_sent) currentCustomer.purchasingStages.invoice_sent = { data: {} };
+            
+            const data = currentCustomer.purchasingStages.invoice_sent.data;
+            const wasCompleted = currentCustomer.purchasingStages.invoice_sent.completed;
+            
+            data.sent = document.querySelector('input[name="invoiceSent"]:checked')?.value || '';
+            data.notes = document.getElementById('invoiceSentNotes').value;
+            data.link = document.getElementById('invoiceLink').value;
+            data.contractStart = document.getElementById('contractStart').value;
+            data.contractEnd = document.getElementById('contractEnd').value;
+            data.invoiceId = document.getElementById('invoiceId').value;
+            data.teacherAccounts = document.getElementById('teacherAccounts').value;
+            data.studentAccounts = document.getElementById('studentAccounts').value;
+            
+            // Log specific activities
+            if (data.link && !currentCustomer.purchasingStages.invoice_sent.data.link) {
+                logActivity(currentCustomer.id, 'Uploaded invoice', `Invoice ID: ${data.invoiceId || 'N/A'}`);
+            }
+            
+            if (data.sent === 'yes' && !wasCompleted) {
+                currentCustomer.purchasingStages.invoice_sent.completed = true;
+                currentCustomer.purchasingStages.invoice_sent.date = new Date().toISOString();
+                currentCustomer.purchasingStages.invoice_sent.by = 'Current User';
+                logActivity(currentCustomer.id, 'Completed stage', 'Invoice Sent to Customer');
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function saveYesNoData(stageId) {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages[stageId]) currentCustomer.purchasingStages[stageId] = { data: {} };
+            
+            const data = currentCustomer.purchasingStages[stageId].data;
+            const wasCompleted = currentCustomer.purchasingStages[stageId].completed;
+            const previousStatus = data.status;
+            const stageName = findStageName('purchasingStages', stageId);
+            
+            data.status = document.querySelector(`input[name="${stageId}_status"]:checked`)?.value || '';
+            data.notes = document.getElementById(`${stageId}_notes`).value;
+            
+            // Log any status change
+            if (data.status && data.status !== previousStatus) {
+                logActivity(currentCustomer.id, `Changed ${stageName} status`, `${previousStatus || 'unset'} → ${data.status}`);
+            }
+            
+            if (data.status === 'yes') {
+                const dateInput = document.getElementById(`${stageId}_date`);
+                if (dateInput) data.date = dateInput.value;
+                
+                if (!wasCompleted) {
+                    currentCustomer.purchasingStages[stageId].completed = true;
+                    currentCustomer.purchasingStages[stageId].date = new Date().toISOString();
+                    currentCustomer.purchasingStages[stageId].by = 'Current User';
+                    logActivity(currentCustomer.id, 'Completed stage', stageName);
+                }
+            } else if (wasCompleted && data.status !== 'yes') {
+                // If it was completed but status changed to no/other, mark as incomplete
+                currentCustomer.purchasingStages[stageId].completed = false;
+                delete currentCustomer.purchasingStages[stageId].date;
+                delete currentCustomer.purchasingStages[stageId].by;
+                logActivity(currentCustomer.id, 'Marked stage incomplete', stageName);
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function handleOtherDocsOption() {
+            const option = document.querySelector('input[name="otherDocsOption"]:checked')?.value;
+            const quotesSection = document.getElementById('quotesSection');
+            const posSection = document.getElementById('posSection');
+            
+            quotesSection.style.display = (option === 'quotes' || option === 'both') ? 'block' : 'none';
+            posSection.style.display = (option === 'pos' || option === 'both') ? 'block' : 'none';
+        }
+        
+        function toggleOtherDocsSection(section) {
+            // This function is kept for backward compatibility but not used with radio buttons
+            handleOtherDocsOption();
+        }
+        
+        function addQuote() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.finance_compliance) currentCustomer.purchasingStages.finance_compliance = { data: {} };
+            if (!currentCustomer.purchasingStages.finance_compliance.data.quotes) currentCustomer.purchasingStages.finance_compliance.data.quotes = [];
+            
+            currentCustomer.purchasingStages.finance_compliance.data.quotes.push({
+                date: '',
+                amount: '',
+                teachers: '',
+                students: '',
+                duration: '',
+                durationType: 'years',
+                link: ''
+            });
+            
+            saveCustomersToLocalStorage();
+            showPurchasingStageDetails('finance_compliance');
+        }
+        
+        function updateQuote(index, field, value) {
+            if (!currentCustomer.purchasingStages?.finance_compliance?.data?.quotes) return;
+            currentCustomer.purchasingStages.finance_compliance.data.quotes[index][field] = value;
+            saveCustomersToLocalStorage();
+            // Refresh to recalculate per-student price
+            if (field === 'amount' || field === 'students') {
+                showPurchasingStageDetails('finance_compliance');
+            }
+        }
+        
+        function removeQuote(index) {
+            if (confirm('Remove this quote?')) {
+                currentCustomer.purchasingStages.finance_compliance.data.quotes.splice(index, 1);
+                saveCustomersToLocalStorage();
+                showPurchasingStageDetails('finance_compliance');
+            }
+        }
+        
+        function addPO() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.finance_compliance) currentCustomer.purchasingStages.finance_compliance = { data: {} };
+            if (!currentCustomer.purchasingStages.finance_compliance.data.purchaseOrders) currentCustomer.purchasingStages.finance_compliance.data.purchaseOrders = [];
+            
+            currentCustomer.purchasingStages.finance_compliance.data.purchaseOrders.push({
+                dateReceived: '',
+                poNumber: '',
+                apName: '',
+                apEmail: '',
+                apPhone: '',
+                apAddress: '',
+                notes: ''
+            });
+            
+            saveCustomersToLocalStorage();
+            showPurchasingStageDetails('finance_compliance');
+        }
+        
+        function updatePO(index, field, value) {
+            if (!currentCustomer.purchasingStages?.finance_compliance?.data?.purchaseOrders) return;
+            currentCustomer.purchasingStages.finance_compliance.data.purchaseOrders[index][field] = value;
+            saveCustomersToLocalStorage();
+        }
+        
+        function removePO(index) {
+            if (confirm('Remove this PO?')) {
+                currentCustomer.purchasingStages.finance_compliance.data.purchaseOrders.splice(index, 1);
+                saveCustomersToLocalStorage();
+                showPurchasingStageDetails('finance_compliance');
+            }
+        }
+        
+        // Remove old stage-related functions (kept for backward compatibility)
+        function handleOtherDocsOption() {
+            const option = document.querySelector('input[name="otherDocsOption"]:checked')?.value;
+            const quotesSection = document.getElementById('quotesSection');
+            const posSection = document.getElementById('posSection');
+            
+            quotesSection.style.display = (option === 'quotes' || option === 'both') ? 'block' : 'none';
+            posSection.style.display = (option === 'pos' || option === 'both') ? 'block' : 'none';
+        }
+        
+        function toggleOtherDocsSection(section) {
+            // This function is kept for backward compatibility but not used with radio buttons
+            handleOtherDocsOption();
+        }
+        
+        function saveOtherDocsData() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.other_docs) currentCustomer.purchasingStages.other_docs = { data: {} };
+            
+            const data = currentCustomer.purchasingStages.other_docs.data;
+            const wasCompleted = currentCustomer.purchasingStages.other_docs.completed;
+            const previousOption = data.option;
+            
+            // Get selected option
+            data.option = document.querySelector('input[name="otherDocsOption"]:checked')?.value || '';
+            
+            // Log option change
+            if (data.option && data.option !== previousOption) {
+                logActivity(currentCustomer.id, 'Set Other Finance Docs', data.option === 'none' ? 'None needed' : data.option);
+            }
+            
+            // Update legacy fields for compatibility
+            data.hasQuotes = (data.option === 'quotes' || data.option === 'both');
+            data.hasPOs = (data.option === 'pos' || data.option === 'both');
+            
+            // Mark as completed if any option is selected
+            if (data.option && !wasCompleted) {
+                currentCustomer.purchasingStages.other_docs.completed = true;
+                currentCustomer.purchasingStages.other_docs.date = new Date().toISOString();
+                currentCustomer.purchasingStages.other_docs.by = 'Current User';
+                logActivity(currentCustomer.id, 'Completed stage', 'Other Finance Docs');
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function toggleActivityLog(timeline) {
+            const logDiv = document.getElementById(`${timeline}ActivityLog`);
+            const toggle = document.getElementById(`${timeline}Toggle`);
+            
+            if (logDiv.style.display === 'none') {
+                logDiv.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                logDiv.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+        }
+        
+        function renderActivityLogForTimeline(timeline) {
+            if (!currentCustomer.activityLog || currentCustomer.activityLog.length === 0) {
+                return '<p style="color: #888;">No activity recorded yet</p>';
+            }
+            
+            // Filter activities for this timeline
+            const relevantActivities = currentCustomer.activityLog.filter(activity => {
+                // Check if activity is related to purchasing timeline stages
+                if (timeline === 'purchasing') {
+                    return purchasingStages.some(stage => 
+                        activity.details.includes(stage.label)
+                    ) || activity.action.includes('finance') || activity.action.includes('invoice') || 
+                    activity.action.includes('compliance') || activity.action.includes('quote') || 
+                    activity.action.includes('PO');
+                }
+                // Add filters for other timelines when implemented
+                return false;
+            });
+            
+            if (relevantActivities.length === 0) {
+                return '<p style="color: #888;">No activity for this timeline yet</p>';
+            }
+            
+            let html = '';
+            // Show most recent first
+            const sortedActivities = [...relevantActivities].reverse();
+            
+            sortedActivities.forEach(activity => {
+                const date = new Date(activity.timestamp);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+                
+                html += `
+                    <div style="margin-bottom: 10px; padding: 8px; background: #333; border-radius: 4px; border-left: 2px solid #2196f3;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 3px;">
+                            ${dateStr} at ${timeStr} • ${activity.by}
+                        </div>
+                        <div style="color: #f0f0f0; font-size: 13px;">
+                            <strong>${activity.action}:</strong> ${activity.details}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            return html;
+        }
+        
+        function deleteCustomer(customerId) {
+            if (!confirm(`Are you sure you want to delete ${currentCustomer.account}? This cannot be undone.`)) {
+                return;
+            }
+            
+            // Remove customer from array
+            customers = customers.filter(c => c.id !== customerId);
+            
+            // Save and go back to list
+            saveCustomersToLocalStorage();
+            backToList();
+            renderCustomerList();
+            populateFilters();
+            showDataStatus(`Customer "${currentCustomer.account}" deleted`, false);
+        }
+        
+        // Placeholder functions for other timelines
+        function showOnboardingStageDetails(stageId) {
+            alert('Onboarding timeline details coming soon!');
+        }
+        
+        function showAccountCharStageDetails(stageId) {
+            alert('Account Characteristics timeline details coming soon!');
+        }
+        
+        function checkFreshSales() {
+            // Placeholder for future FreshSales integration
+            alert('FreshSales integration coming soon!');
+        }
+    </script>
+</body>
+</html>
