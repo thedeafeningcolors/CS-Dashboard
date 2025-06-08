@@ -491,6 +491,127 @@
         textarea::placeholder {
             color: #666;
         }
+        
+        /* Column Manager Styles */
+        .column-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+            border: 1px solid #3a3a3a;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        
+        .column-item:hover {
+            background-color: #333;
+            border-color: #555;
+        }
+        
+        .column-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .column-item.drag-over {
+            border-color: #2196f3;
+            transform: translateY(-2px);
+        }
+        
+        .column-drag-handle {
+            display: flex;
+            align-items: center;
+            margin-right: 12px;
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .column-checkbox {
+            margin-right: 12px;
+        }
+        
+        .column-label {
+            flex: 1;
+            color: #e0e0e0;
+        }
+        
+        .column-order {
+            background-color: #1a1a1a;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #888;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        /* Copyable elements */
+        .copyable {
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .copyable:hover {
+            background-color: #3a3a3a;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .copyable:hover::after {
+            content: "📋 Click to copy";
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 100;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+        
+        .contact-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .contact-label {
+            font-weight: 600;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+        
+        .contact-display {
+            background-color: #1a1a1a;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            border: 1px solid transparent;
+        }
+        
+        .contact-input {
+            background-color: #1a1a1a;
+            border: 1px solid #424242;
+            padding: 8px;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .contact-input:focus {
+            border-color: #2196f3;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -552,6 +673,30 @@
                 <button class="close-button" onclick="closeModal()">&times;</button>
             </div>
             <div id="modalBody"></div>
+        </div>
+    </div>
+    
+    <!-- Column Manager Modal -->
+    <div id="columnManagerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Columns</h3>
+                <button class="close-button" onclick="closeColumnManager()">&times;</button>
+            </div>
+            <div>
+                <p style="color: #b0b0b0; margin-bottom: 20px;">
+                    Drag to reorder columns. Check/uncheck to show/hide columns.
+                </p>
+                
+                <div id="columnList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Column items will be populated here -->
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="resetColumns()" class="secondary">Reset to Default</button>
+                    <button onclick="saveColumnConfig()" class="success">Save Changes</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -651,19 +796,26 @@
         ];
         
         const onboardingStages = [
-            { id: 'scheduled', label: 'Onboarding Scheduled', icon: '📅' },
-            { id: 'preference', label: 'Preference Selected', icon: '⚙️' },
-            { id: 'tech_notified', label: 'Tech Team Notified', icon: '👨‍💻' },
-            { id: 'implementation', label: 'Implementation', icon: '🔧' },
-            { id: 'go_live', label: 'Go Live', icon: '🚀' },
-            { id: 'training', label: 'Training Complete', icon: '📚' }
+            { id: 'welcome_email', label: 'Welcome Email Sent by Sales', icon: '📧' },
+            { id: 'joint_meeting_scheduled', label: 'Joint Sales + CS Meeting Scheduled', icon: '📅' },
+            { id: 'joint_meeting_held', label: 'Joint Sales + CS Meeting Held', icon: '🤝' },
+            { id: 'it_meeting_scheduled', label: 'IT + CS Meeting Scheduled', icon: '💻' },
+            { id: 'it_meeting_held', label: 'IT + CS Meeting Held', icon: '🔧' },
+            { id: 'system_integration_scheduled', label: 'System Integration Meeting Scheduled', icon: '🔗' },
+            { id: 'system_integration_held', label: 'System Integration Meeting Held', icon: '✅' }
         ];
         
         const accountCharStages = [
-            { id: 'basic_info', label: 'Basic Info', icon: '📝' },
-            { id: 'contacts', label: 'Key Contacts', icon: '👥' },
-            { id: 'technical', label: 'Technical Details', icon: '💻' },
-            { id: 'preferences', label: 'Preferences', icon: '⚙️' }
+            { id: 'client_type', label: 'Client Type & Structure', icon: '🏢' },
+            { id: 'juice_edition', label: 'Juice Edition', icon: '📚' },
+            { id: 'rostering_tallies', label: 'Account Tallies', icon: '📊' },
+            { id: 'rostering_preference', label: 'Rostering Preferences', icon: '⚙️' }
+        ];
+        
+        const finalCheckStages = [
+            { id: 'it_check', label: 'IT Confirmation', icon: '💻', department: 'IT' },
+            { id: 'cs_check', label: 'Customer Success Confirmation', icon: '🤝', department: 'Customer Success' },
+            { id: 'sales_check', label: 'Sales Confirmation', icon: '💼', department: 'Sales' }
         ];
         
         // Keep old stages for backward compatibility
@@ -681,15 +833,79 @@
             { id: 'renewed', label: 'Renewed', icon: '🎉' }
         ];
         
+        // Column configuration for the customer list
+        let columnConfig = {
+            account: { label: 'Account', visible: true, order: 1 },
+            state: { label: 'State', visible: true, order: 2 },
+            type: { label: 'Type', visible: true, order: 3 },
+            implementation: { label: 'Implementation', visible: true, order: 4 },
+            contractDuration: { label: 'Contract Duration', visible: true, order: 5 },
+            startDate: { label: 'Start Date', visible: true, order: 6 },
+            endDate: { label: 'End Date', visible: true, order: 7 },
+            teachers: { label: 'Teachers', visible: true, order: 8 },
+            districtAdmins: { label: 'District Admins', visible: true, order: 9 }
+        };
+        
+        // Special sorting options
+        const specialSortOptions = {
+            contractEndProximity: { label: 'Contract End Proximity', key: 'contractEndProximity' }
+        };
+        
+        let currentSort = { column: 'account', direction: 'asc' };
+        
         // Initialize on load
         window.onload = function() {
             initializeApp();
         };
         
         function initializeApp() {
+            loadColumnConfig();
             loadCustomersFromLocalStorage();
             renderCustomerList();
             populateFilters();
+        }
+        
+        function getContractDuration(customer) {
+            if (!customer.accountStart) return 'Unknown';
+            
+            const startDate = new Date(customer.accountStart);
+            const now = new Date();
+            const diffTime = now - startDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffMonths = Math.floor(diffDays / 30);
+            
+            if (diffDays < 0) return 'Future start';
+            if (diffDays < 30) return 'Less than 1 month';
+            if (diffMonths === 1) return '1 month';
+            if (diffMonths < 12) return `${diffMonths} months`;
+            
+            const years = Math.floor(diffMonths / 12);
+            const remainingMonths = diffMonths % 12;
+            
+            if (years === 1 && remainingMonths === 0) return '1 year';
+            if (years === 1) return `1 year, ${remainingMonths} months`;
+            if (remainingMonths === 0) return `${years} years`;
+            return `${years} years, ${remainingMonths} months`;
+        }
+        
+        function getImplementationType(customer) {
+            const editionData = customer.accountCharStages?.juice_edition?.data;
+            if (!editionData?.edition) return 'Not set';
+            
+            switch(editionData.edition) {
+                case 'Classroom': return 'Regular';
+                case 'Library': return 'Library';
+                case 'Both/Hybrid': return 'Hybrid';
+                default: return 'Not set';
+            }
+        }
+        
+        function getAccountCounts(customer) {
+            const talliesData = customer.accountCharStages?.rostering_tallies?.data;
+            return {
+                teachers: talliesData?.teacherAccounts || '0',
+                districtAdmins: talliesData?.districtAdminAccounts || '0'
+            };
         }
         
         function loadCustomersFromLocalStorage() {
@@ -723,43 +939,108 @@
             }
             
             const filtered = filterCustomersData();
+            const sorted = sortCustomers(filtered);
             
-            if (filtered.length === 0) {
+            if (sorted.length === 0) {
                 listContainer.innerHTML = '<div class="loading">No customers found</div>';
                 return;
             }
             
+            // Get visible columns sorted by order
+            const visibleColumns = Object.entries(columnConfig)
+                .filter(([key, config]) => config.visible)
+                .sort((a, b) => a[1].order - b[1].order);
+            
             let html = `
+                <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="showColumnManager()" class="secondary">⚙️ Columns</button>
+                        <select id="sortColumn" onchange="changeSorting()" style="padding: 6px;">
+                            ${Object.entries(columnConfig).map(([key, config]) => 
+                                `<option value="${key}" ${currentSort.column === key ? 'selected' : ''}>${config.label}</option>`
+                            ).join('')}
+                            <optgroup label="Special Sorts">
+                                ${Object.entries(specialSortOptions).map(([key, config]) => 
+                                    `<option value="${key}" ${currentSort.column === key ? 'selected' : ''}>${config.label}</option>`
+                                ).join('')}
+                            </optgroup>
+                        </select>
+                        <button onclick="toggleSortDirection()" class="secondary" style="padding: 6px 12px;">
+                            ${currentSort.direction === 'asc' ? '↑' : '↓'}
+                        </button>
+                    </div>
+                    <div style="color: #888; font-size: 14px;">
+                        ${sorted.length} customer${sorted.length !== 1 ? 's' : ''}
+                    </div>
+                </div>
+                
                 <table>
                     <thead>
                         <tr>
-                            <th>Account</th>
-                            <th>State</th>
-                            <th>Type</th>
-                            <th>Contract Status</th>
-                            <th>End Date</th>
-                            <th>Students</th>
-                            <th>Amount</th>
+                            ${visibleColumns.map(([key, config]) => `
+                                <th onclick="setSorting('${key}')" style="cursor: pointer; user-select: none;">
+                                    ${config.label}
+                                    ${currentSort.column === key ? (currentSort.direction === 'asc' ? ' ↑' : ' ↓') : ''}
+                                </th>
+                            `).join('')}
                         </tr>
                     </thead>
                     <tbody>
             `;
             
-            filtered.forEach(customer => {
+            sorted.forEach(customer => {
+                const startDate = customer.accountStart ? new Date(customer.accountStart).toLocaleDateString() : 'N/A';
                 const endDate = customer.accountEnd ? new Date(customer.accountEnd).toLocaleDateString() : 'N/A';
-                const statusClass = customer.contractStatus.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '');
+                const contractDuration = getContractDuration(customer);
+                const implementation = getImplementationType(customer);
+                const accounts = getAccountCounts(customer);
                 
-                html += `
-                    <tr onclick="showCustomerJourney(${customer.id})">
-                        <td>${customer.account}</td>
-                        <td>${customer.state}</td>
-                        <td>${customer.type}</td>
-                        <td><span class="contract-status ${statusClass}">${customer.contractStatus}</span></td>
-                        <td>${endDate}</td>
-                        <td>${customer.students || '-'}</td>
-                        <td>${customer.amount || '-'}</td>
-                    </tr>
-                `;
+                // Check if customer is active
+                const isActive = finalCheckStages.every(stage => 
+                    customer.finalChecks?.[stage.id]?.confirmed === true
+                );
+                
+                html += `<tr onclick="showCustomerJourney(${customer.id})">`;
+                
+                visibleColumns.forEach(([key, config]) => {
+                    let cellContent = '';
+                    
+                    switch(key) {
+                        case 'account':
+                            cellContent = `${customer.account}${isActive ? '<span style="color: #66bb6a; margin-left: 8px;">✅</span>' : ''}`;
+                            break;
+                        case 'state':
+                            cellContent = customer.state || '-';
+                            break;
+                        case 'type':
+                            cellContent = customer.type || '-';
+                            break;
+                        case 'implementation':
+                            cellContent = implementation;
+                            break;
+                        case 'contractDuration':
+                            cellContent = contractDuration;
+                            break;
+                        case 'startDate':
+                            cellContent = startDate;
+                            break;
+                        case 'endDate':
+                            cellContent = endDate;
+                            break;
+                        case 'teachers':
+                            cellContent = accounts.teachers;
+                            break;
+                        case 'districtAdmins':
+                            cellContent = accounts.districtAdmins;
+                            break;
+                        default:
+                            cellContent = '-';
+                    }
+                    
+                    html += `<td>${cellContent}</td>`;
+                });
+                
+                html += `</tr>`;
             });
             
             html += '</tbody></table>';
@@ -788,6 +1069,100 @@
             renderCustomerList();
         }
         
+        function sortCustomers(customers) {
+            return [...customers].sort((a, b) => {
+                let aValue, bValue;
+                
+                switch(currentSort.column) {
+                    case 'account':
+                        aValue = a.account || '';
+                        bValue = b.account || '';
+                        break;
+                    case 'state':
+                        aValue = a.state || '';
+                        bValue = b.state || '';
+                        break;
+                    case 'type':
+                        aValue = a.type || '';
+                        bValue = b.type || '';
+                        break;
+                    case 'implementation':
+                        aValue = getImplementationType(a);
+                        bValue = getImplementationType(b);
+                        break;
+                    case 'contractDuration':
+                        // Sort by actual start date for duration
+                        aValue = a.accountStart ? new Date(a.accountStart) : new Date(0);
+                        bValue = b.accountStart ? new Date(b.accountStart) : new Date(0);
+                        break;
+                    case 'startDate':
+                        aValue = a.accountStart ? new Date(a.accountStart) : new Date(0);
+                        bValue = b.accountStart ? new Date(b.accountStart) : new Date(0);
+                        break;
+                    case 'endDate':
+                        aValue = a.accountEnd ? new Date(a.accountEnd) : new Date(0);
+                        bValue = b.accountEnd ? new Date(b.accountEnd) : new Date(0);
+                        break;
+                    case 'teachers':
+                        aValue = parseInt(getAccountCounts(a).teachers) || 0;
+                        bValue = parseInt(getAccountCounts(b).teachers) || 0;
+                        break;
+                    case 'districtAdmins':
+                        aValue = parseInt(getAccountCounts(a).districtAdmins) || 0;
+                        bValue = parseInt(getAccountCounts(b).districtAdmins) || 0;
+                        break;
+                    case 'contractEndProximity':
+                        // Sort by days remaining until contract end (ascending = soonest first)
+                        const aEnd = a.accountEnd ? new Date(a.accountEnd) : new Date('2099-12-31');
+                        const bEnd = b.accountEnd ? new Date(b.accountEnd) : new Date('2099-12-31');
+                        const now = new Date();
+                        aValue = aEnd - now;
+                        bValue = bEnd - now;
+                        break;
+                    default:
+                        aValue = '';
+                        bValue = '';
+                }
+                
+                // Handle different data types
+                if (aValue instanceof Date && bValue instanceof Date) {
+                    return currentSort.direction === 'asc' ? aValue - bValue : bValue - aValue;
+                } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    return currentSort.direction === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    // String comparison
+                    aValue = String(aValue).toLowerCase();
+                    bValue = String(bValue).toLowerCase();
+                    if (currentSort.direction === 'asc') {
+                        return aValue.localeCompare(bValue);
+                    } else {
+                        return bValue.localeCompare(aValue);
+                    }
+                }
+            });
+        }
+        
+        function setSorting(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            renderCustomerList();
+        }
+        
+        function changeSorting() {
+            const select = document.getElementById('sortColumn');
+            currentSort.column = select.value;
+            renderCustomerList();
+        }
+        
+        function toggleSortDirection() {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            renderCustomerList();
+        }
+        
         function populateFilters() {
             if (!customers || customers.length === 0) return;
             
@@ -801,6 +1176,14 @@
                 option.textContent = state;
                 stateSelect.appendChild(option);
             });
+            
+            // Update type filter to include implementation types
+            const typeSelect = document.getElementById('typeFilter');
+            typeSelect.innerHTML = `
+                <option value="">All</option>
+                <option value="Normal">Normal</option>
+                <option value="Library">Library</option>
+            `;
         }
         
         function showCustomerJourney(customerId) {
@@ -818,11 +1201,19 @@
             const endDate = currentCustomer.accountEnd ? new Date(currentCustomer.accountEnd).toLocaleDateString() : 'N/A';
             const startDate = currentCustomer.accountStart ? new Date(currentCustomer.accountStart).toLocaleDateString() : 'N/A';
             
+            // Check if customer is active
+            const isActive = checkCustomerActive();
+            
             let html = `
                 <div class="journey-header">
                     <div class="journey-header-top">
                         <div>
-                            <h2>${currentCustomer.account}</h2>
+                            <h2>
+                                ${currentCustomer.account}
+                                <span style="display: inline-block; margin-left: 15px; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: normal; background: ${isActive ? '#1b4332' : '#3a3a3a'}; color: ${isActive ? '#66bb6a' : '#888'};">
+                                    ${isActive ? '✅ Active' : '⏳ Pre-Activation'}
+                                </span>
+                            </h2>
                             <p style="color: #7f8c8d; margin: 5px 0;">
                                 ${currentCustomer.contractStatus} • ${currentCustomer.state}
                             </p>
@@ -835,37 +1226,59 @@
                     
                     <!-- Account Overview (combined details + summary) -->
                     <div style="background-color: #1a1a1a; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #3a3a3a;">
-                        <h3 style="color: #f0f0f0; margin: 0 0 15px 0;">Account Overview</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="color: #f0f0f0; margin: 0;">Account Overview</h3>
+                            <button onclick="toggleContactEdit()" id="editContactsBtn" class="secondary" style="font-size: 12px; padding: 6px 12px;">✏️ Edit Contacts</button>
+                        </div>
+                        
+                        <!-- Contacts Section -->
+                        <div style="background-color: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="color: #64b5f6; margin: 0 0 15px 0;">Key Contacts</h4>
+                            
+                            <div id="contactsDisplay" style="display: block;">
+                                ${renderContactsDisplay()}
+                            </div>
+                            
+                            <div id="contactsEdit" style="display: none;">
+                                ${renderContactsEdit()}
+                            </div>
+                        </div>
+                        
+                        <!-- Last Action -->
+                        <div style="background-color: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="color: #ffa726; margin: 0 0 10px 0;">Last Action</h4>
+                            ${getLastAction()}
+                        </div>
                         
                         <!-- Basic Details -->
                         <div class="customer-details" style="margin-bottom: 20px;">
                             <div class="detail-item">
                                 <span class="detail-label">Type</span>
-                                <span class="detail-value">${currentCustomer.type}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${currentCustomer.type}')">${currentCustomer.type}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Purchase Vehicle</span>
-                                <span class="detail-value">${currentCustomer.purchaseVehicle || 'N/A'}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${currentCustomer.purchaseVehicle || 'N/A'}')">${currentCustomer.purchaseVehicle || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Contract Period</span>
-                                <span class="detail-value">${startDate} - ${endDate}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${startDate} - ${endDate}')">${startDate} - ${endDate}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Students</span>
-                                <span class="detail-value">${currentCustomer.students || '-'}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${currentCustomer.students || '-'}')">${currentCustomer.students || '-'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Teachers</span>
-                                <span class="detail-value">${currentCustomer.teachers || '-'}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${currentCustomer.teachers || '-'}')">${currentCustomer.teachers || '-'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Amount</span>
-                                <span class="detail-value">${currentCustomer.amount || '-'}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${currentCustomer.amount || '-'}')">${currentCustomer.amount || '-'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Per Student Price</span>
-                                <span class="detail-value">${currentCustomer.perStdtPrice || '-'}</span>
+                                <span class="detail-value copyable" onclick="copyToClipboard('${currentCustomer.perStdtPrice || '-'}')">${currentCustomer.perStdtPrice || '-'}</span>
                             </div>
                         </div>
                         
@@ -951,6 +1364,17 @@
                 html += `
                         </div>
                     </div>
+                    
+                    <!-- Onboarding Activity Log (Collapsible) -->
+                    <div style="margin-top: 15px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #3a3a3a;">
+                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleActivityLog('onboarding')">
+                            <h5 style="margin: 0; color: #66bb6a;">Onboarding Activity Log</h5>
+                            <span id="onboardingToggle" style="color: #66bb6a;">▼</span>
+                        </div>
+                        <div id="onboardingActivityLog" style="display: block; padding: 0 15px 15px 15px; max-height: 300px; overflow-y: auto;">
+                            ${renderActivityLogForTimeline('onboarding')}
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Account Characteristics Timeline -->
@@ -979,10 +1403,206 @@
                 html += `
                         </div>
                     </div>
+                    
+                    <!-- Account Characteristics Activity Log (Collapsible) -->
+                    <div style="margin-top: 15px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #3a3a3a;">
+                        <div style="padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleActivityLog('accountChar')">
+                            <h5 style="margin: 0; color: #ffa726;">Account Characteristics Activity Log</h5>
+                            <span id="accountCharToggle" style="color: #ffa726;">▼</span>
+                        </div>
+                        <div id="accountCharActivityLog" style="display: block; padding: 0 15px 15px 15px; max-height: 300px; overflow-y: auto;">
+                            ${renderActivityLogForTimeline('accountChar')}
+                        </div>
+                    </div>
                 </div>
+                
+                <!-- Final Onboarding Check Section -->
+                ${renderFinalOnboardingCheck()}
             `;
             
             container.innerHTML = html;
+        }
+        
+        function renderFinalOnboardingCheck() {
+            // Check if all three timelines are complete
+            const purchasingComplete = checkTimelineComplete('purchasingStages', purchasingStages);
+            const onboardingComplete = checkTimelineComplete('onboardingStages', onboardingStages);
+            const accountCharComplete = checkTimelineComplete('accountCharStages', accountCharStages);
+            
+            const allTimelinesComplete = purchasingComplete && onboardingComplete && accountCharComplete;
+            
+            if (!allTimelinesComplete) {
+                return `
+                    <div style="margin-top: 40px; padding: 20px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #3a3a3a;">
+                        <h3 style="color: #f0f0f0; margin-bottom: 15px;">Final Onboarding Check</h3>
+                        <p style="color: #888;">Complete all three timelines above to unlock the final onboarding check.</p>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div style="margin-top: 40px; padding: 20px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #3a3a3a;">
+                    <h3 style="color: #f0f0f0; margin-bottom: 15px;">Final Onboarding Check</h3>
+                    <p style="color: #66bb6a; margin-bottom: 20px;">✓ All timelines complete! Ready for department confirmations.</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        ${finalCheckStages.map(stage => renderFinalCheckStage(stage)).join('')}
+                    </div>
+                    
+                    ${renderCustomerActivationStatus()}
+                </div>
+            `;
+        }
+        
+        function renderFinalCheckStage(stage) {
+            const checkData = currentCustomer.finalChecks?.[stage.id] || {};
+            const isConfirmed = checkData.confirmed === true;
+            
+            return `
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; cursor: pointer;" 
+                     onclick="showFinalCheckDetails('${stage.id}')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 24px;">${isConfirmed ? '✅' : stage.icon}</div>
+                        <div style="flex: 1;">
+                            <h5 style="margin: 0; color: ${isConfirmed ? '#66bb6a' : '#f0f0f0'};">
+                                ${stage.department}
+                            </h5>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #888;">
+                                ${isConfirmed ? `Confirmed by ${checkData.by}` : 'Pending confirmation'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderCustomerActivationStatus() {
+            const allChecksComplete = finalCheckStages.every(stage => 
+                currentCustomer.finalChecks?.[stage.id]?.confirmed === true
+            );
+            
+            if (!allChecksComplete) {
+                return '';
+            }
+            
+            return `
+                <div style="margin-top: 20px; padding: 15px; background: #1b4332; border-radius: 8px; text-align: center;">
+                    <h4 style="color: #66bb6a; margin: 0;">🎉 Customer is Active!</h4>
+                    <p style="color: #a5d6a7; margin: 10px 0 0 0;">
+                        All departments have confirmed. This customer is now active and ready to use The Juice.
+                    </p>
+                </div>
+            `;
+        }
+        
+        function checkTimelineComplete(timelineName, stages) {
+            if (!currentCustomer[timelineName]) return false;
+            return stages.every(stage => currentCustomer[timelineName][stage.id]?.completed === true);
+        }
+        
+        function checkCustomerActive() {
+            // Check if all final checks are complete
+            return finalCheckStages.every(stage => 
+                currentCustomer.finalChecks?.[stage.id]?.confirmed === true
+            );
+        }
+        
+        function showFinalCheckDetails(checkId) {
+            const stage = finalCheckStages.find(s => s.id === checkId);
+            const checkData = currentCustomer.finalChecks?.[checkId] || {};
+            
+            const modal = document.getElementById('stageModal');
+            document.getElementById('modalTitle').textContent = `${stage.department} Confirmation`;
+            
+            let bodyHtml = '';
+            
+            if (checkData.confirmed) {
+                bodyHtml += `
+                    <div style="background: #1b4332; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>✓ Confirmed</strong> on ${new Date(checkData.date).toLocaleString()} by ${checkData.by}
+                        <button onclick="markFinalCheckIncomplete('${checkId}')" class="danger" style="float: right; padding: 4px 8px; font-size: 12px;">Mark Unconfirmed</button>
+                    </div>
+                `;
+            }
+            
+            bodyHtml += `
+                <div style="margin-bottom: 20px;">
+                    <strong>Can you confirm this customer is active and happy?</strong>
+                    <div style="margin-top: 15px;">
+                        <label>
+                            <input type="radio" name="finalCheck_${checkId}" value="yes" ${checkData.status === 'yes' ? 'checked' : ''}> 
+                            Yes - Customer is active and happy
+                        </label>
+                        <label style="display: block; margin-top: 10px;">
+                            <input type="radio" name="finalCheck_${checkId}" value="no" ${checkData.status === 'no' ? 'checked' : ''}> 
+                            No - There are issues to resolve
+                        </label>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <label style="display: block; margin-bottom: 5px;">Notes:</label>
+                        <textarea id="finalCheck_${checkId}_notes" style="width: 100%; min-height: 100px;" placeholder="Add any relevant notes...">${checkData.notes || ''}</textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveFinalCheckData('${checkId}')" class="success">Save Confirmation</button>
+                </div>
+            `;
+            
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            modal.style.display = 'block';
+        }
+        
+        function saveFinalCheckData(checkId) {
+            if (!currentCustomer.finalChecks) currentCustomer.finalChecks = {};
+            if (!currentCustomer.finalChecks[checkId]) currentCustomer.finalChecks[checkId] = {};
+            
+            const data = currentCustomer.finalChecks[checkId];
+            const wasConfirmed = data.confirmed;
+            const stage = finalCheckStages.find(s => s.id === checkId);
+            
+            data.status = document.querySelector(`input[name="finalCheck_${checkId}"]:checked`)?.value || '';
+            data.notes = document.getElementById(`finalCheck_${checkId}_notes`).value;
+            
+            if (data.status === 'yes' && !wasConfirmed) {
+                data.confirmed = true;
+                data.date = new Date().toISOString();
+                data.by = 'Current User';
+                logActivity(currentCustomer.id, 'Department confirmation', `${stage.department} confirmed customer is active`);
+                
+                // Check if all departments have confirmed
+                const allConfirmed = finalCheckStages.every(s => 
+                    currentCustomer.finalChecks?.[s.id]?.confirmed === true
+                );
+                
+                if (allConfirmed) {
+                    logActivity(currentCustomer.id, 'Customer activated', 'All departments confirmed - customer is now active!');
+                }
+            } else if (data.status === 'no' && wasConfirmed) {
+                data.confirmed = false;
+                delete data.date;
+                delete data.by;
+                logActivity(currentCustomer.id, 'Department confirmation removed', `${stage.department} marked issues to resolve`);
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function markFinalCheckIncomplete(checkId) {
+            if (!currentCustomer.finalChecks?.[checkId]) return;
+            
+            const stage = finalCheckStages.find(s => s.id === checkId);
+            currentCustomer.finalChecks[checkId].confirmed = false;
+            delete currentCustomer.finalChecks[checkId].date;
+            delete currentCustomer.finalChecks[checkId].by;
+            
+            logActivity(currentCustomer.id, 'Department confirmation removed', `${stage.department} confirmation marked incomplete`);
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
         }
         
         function generateSummaryReport() {
@@ -1044,16 +1664,78 @@
             
             report += '</div>';
             
-            // Onboarding Summary (placeholder for now)
+            // Onboarding Summary
             report += '<div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">';
             report += '<h4 style="color: #66bb6a; margin-bottom: 15px;">Onboarding Status</h4>';
-            report += '<p style="color: #888;">Not yet started</p>';
+            
+            const onboardData = currentCustomer.onboardingStages || {};
+            onboardingStages.forEach(stage => {
+                if (onboardData[stage.id]?.completed) {
+                    report += `<div style="margin-bottom: 5px;"><strong>✓ ${stage.label}</strong>`;
+                    if (onboardData[stage.id].data?.date) {
+                        report += ` (${new Date(onboardData[stage.id].data.date).toLocaleDateString()})`;
+                    }
+                    report += '</div>';
+                }
+            });
+            
+            if (Object.keys(onboardData).length === 0) {
+                report += '<p style="color: #888;">Not yet started</p>';
+            }
+            
             report += '</div>';
             
-            // Account Info Summary (placeholder for now)
+            // Account Info Summary
             report += '<div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">';
             report += '<h4 style="color: #ffa726; margin-bottom: 15px;">Account Information</h4>';
-            report += '<p style="color: #888;">Not yet collected</p>';
+            
+            const charData = currentCustomer.accountCharStages || {};
+            
+            // Client Type
+            if (charData.client_type?.data?.clientType) {
+                report += `<div style="margin-bottom: 10px;"><strong>Type:</strong> ${charData.client_type.data.clientType}`;
+                if (charData.client_type.data.numberOfBuildings) {
+                    report += ` (${charData.client_type.data.numberOfBuildings} buildings)`;
+                }
+                report += '</div>';
+            }
+            
+            // Juice Edition
+            if (charData.juice_edition?.data?.edition) {
+                report += `<div style="margin-bottom: 10px;"><strong>Edition:</strong> ${charData.juice_edition.data.edition}</div>`;
+            }
+            
+            // Account Tallies
+            if (charData.rostering_tallies?.data) {
+                const tallies = charData.rostering_tallies.data;
+                if (tallies.districtAdminAccounts || tallies.teacherAccounts || tallies.studentAccounts) {
+                    report += '<div style="margin-bottom: 10px;"><strong>Accounts:</strong>';
+                    const accounts = [];
+                    if (tallies.districtAdminAccounts) accounts.push(`${tallies.districtAdminAccounts} admins`);
+                    if (tallies.teacherAccounts) accounts.push(`${tallies.teacherAccounts} teachers`);
+                    if (tallies.studentAccounts) accounts.push(`${tallies.studentAccounts} students`);
+                    report += ` ${accounts.join(', ')}</div>`;
+                }
+            }
+            
+            // Rostering Preference
+            if (charData.rostering_preference?.data) {
+                const pref = charData.rostering_preference.data;
+                if (pref.usesLMS || pref.usesSIS || pref.usesSSO) {
+                    const systems = [];
+                    if (pref.lms?.length > 0) systems.push(`LMS: ${pref.lms.join(', ')}`);
+                    if (pref.sis?.length > 0) systems.push(`SIS: ${pref.sis.join(', ')}`);
+                    if (pref.sso?.length > 0) systems.push(`SSO: ${pref.sso.join(', ')}`);
+                    report += `<div style="margin-bottom: 5px;"><strong>Integration:</strong> ${systems.join('; ')}</div>`;
+                } else if (pref.methods?.length > 0) {
+                    report += `<div style="margin-bottom: 5px;"><strong>Rostering:</strong> ${pref.methods.join(', ')} ${pref.needsHelp ? '(needs help)' : '(self-service)'}</div>`;
+                }
+            }
+            
+            if (Object.keys(charData).length === 0) {
+                report += '<p style="color: #888;">Not yet collected</p>';
+            }
+            
             report += '</div>';
             
             report += '</div>';
@@ -1222,6 +1904,21 @@
                 `;
             }
             
+            // None needed option
+            html += `
+                <div style="margin-bottom: 30px; padding: 15px; background: #333; border-radius: 8px;">
+                    <label style="font-weight: 600; font-size: 16px;">
+                        <input type="checkbox" id="noneNeeded" ${data.noneNeeded ? 'checked' : ''} onchange="toggleFinanceDocsNeeded()"> 
+                        No Finance & Compliance Documents Needed
+                    </label>
+                    <p style="margin: 10px 0 0 25px; color: #888; font-size: 14px;">
+                        Check this if no compliance documents, quotes, or purchase orders are required for this customer.
+                    </p>
+                </div>
+            `;
+            
+            html += `<div id="financeDocsContainer" style="display: ${data.noneNeeded ? 'none' : 'block'};">`;
+            
             // Compliance Documents Section
             html += `
                 <div style="margin-bottom: 30px;">
@@ -1256,15 +1953,19 @@
                     </div>
                     <button onclick="addPO()" class="secondary">+ Add PO</button>
                 </div>
-                
-                <!-- General Notes -->
+            `;
+            
+            html += `</div>`; // Close financeDocsContainer
+            
+            // General Notes (always visible)
+            html += `
                 <div style="margin-bottom: 20px;">
                     <h4>Additional Notes</h4>
                     <textarea id="financeComplianceNotes" style="width: 100%; min-height: 80px;" placeholder="Any additional notes about finance or compliance documents...">${data.notes || ''}</textarea>
                 </div>
                 
                 <div style="margin-top: 20px;">
-                    <button onclick="saveFinanceComplianceData()" class="success">Save All Documents</button>
+                    <button onclick="saveFinanceComplianceData()" class="success">Save & Complete Stage</button>
                 </div>
             `;
             
@@ -1777,6 +2478,9 @@
                 case 'accountCharStages':
                     stages = accountCharStages;
                     break;
+                case 'finalChecks':
+                    stages = finalCheckStages;
+                    break;
                 default:
                     return stageId;
             }
@@ -1890,7 +2594,8 @@
             data.studentAccounts = document.getElementById('studentAccounts').value;
             
             // Log specific activities
-            if (data.link && !currentCustomer.purchasingStages.invoice_sent.data.link) {
+            const previousLink = currentCustomer.purchasingStages.invoice_sent.data?.link;
+            if (data.link && !previousLink) {
                 logActivity(currentCustomer.id, 'Uploaded invoice', `Invoice ID: ${data.invoiceId || 'N/A'}`);
             }
             
@@ -2102,11 +2807,27 @@
                 if (timeline === 'purchasing') {
                     return purchasingStages.some(stage => 
                         activity.details.includes(stage.label)
-                    ) || activity.action.includes('finance') || activity.action.includes('invoice') || 
-                    activity.action.includes('compliance') || activity.action.includes('quote') || 
-                    activity.action.includes('PO');
+                    ) || activity.action.toLowerCase().includes('finance') || 
+                    activity.action.toLowerCase().includes('invoice') || 
+                    activity.action.toLowerCase().includes('compliance') || 
+                    activity.action.toLowerCase().includes('quote') || 
+                    activity.action.toLowerCase().includes('po') ||
+                    activity.details.toLowerCase().includes('invoice') ||
+                    activity.details.toLowerCase().includes('finance') ||
+                    activity.details.toLowerCase().includes('compliance') ||
+                    activity.details.toLowerCase().includes('quote') ||
+                    activity.details.toLowerCase().includes('purchase order');
+                } else if (timeline === 'onboarding') {
+                    return onboardingStages.some(stage => 
+                        activity.details.includes(stage.label)
+                    ) || activity.action.includes('meeting') || activity.action.includes('integration') || 
+                    activity.action.includes('welcome') || activity.action.includes('onboarding');
+                } else if (timeline === 'accountChar') {
+                    return accountCharStages.some(stage => 
+                        activity.details.includes(stage.label)
+                    ) || activity.action.includes('client type') || activity.action.includes('edition') || 
+                    activity.action.includes('rostering') || activity.action.includes('tallies');
                 }
-                // Add filters for other timelines when implemented
                 return false;
             });
             
@@ -2154,18 +2875,926 @@
             showDataStatus(`Customer "${currentCustomer.account}" deleted`, false);
         }
         
-        // Placeholder functions for other timelines
+        // Onboarding Timeline Functions
         function showOnboardingStageDetails(stageId) {
-            alert('Onboarding timeline details coming soon!');
+            currentStage = stageId;
+            const stage = onboardingStages.find(s => s.id === stageId);
+            const stageData = currentCustomer.onboardingStages?.[stageId] || {};
+            
+            const modal = document.getElementById('stageModal');
+            document.getElementById('modalTitle').textContent = stage.label;
+            
+            let bodyHtml = '';
+            
+            // Show completion info if stage is completed
+            if (stageData.completed) {
+                bodyHtml += `
+                    <div style="background: #1b4332; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>✓ Completed</strong> on ${new Date(stageData.date).toLocaleString()} by ${stageData.by}
+                        <button onclick="markStageIncomplete('onboardingStages', '${stageId}')" class="danger" style="float: right; padding: 4px 8px; font-size: 12px;">Mark Incomplete</button>
+                    </div>
+                `;
+            }
+            
+            // Different content based on stage
+            switch(stageId) {
+                case 'system_integration_scheduled':
+                case 'system_integration_held':
+                    bodyHtml += renderSystemIntegrationStage(stageId, stageData, stage.label);
+                    break;
+                default:
+                    bodyHtml += renderOnboardingYesNoStage(stageId, stageData, stage.label);
+            }
+            
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            modal.style.display = 'block';
+        }
+        
+        function renderOnboardingYesNoStage(stageId, stageData, label) {
+            const data = stageData.data || {};
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <strong>${label}?</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="${stageId}_status" value="yes" ${data.status === 'yes' ? 'checked' : ''}> Yes</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="no" ${data.status === 'no' ? 'checked' : ''}> No</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="other" ${data.status === 'other' ? 'checked' : ''}> Other</label>
+                    </div>
+                    <textarea id="${stageId}_notes" placeholder="Notes..." style="width: 100%; margin-top: 10px;">${data.notes || ''}</textarea>
+                    
+                    ${data.status === 'yes' ? `
+                        <div style="margin-top: 10px;">
+                            <label>Date:</label>
+                            <input type="date" id="${stageId}_date" value="${data.date || new Date().toISOString().split('T')[0]}">
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveOnboardingYesNoData('${stageId}')" class="success">Save</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function renderSystemIntegrationStage(stageId, stageData, label) {
+            const data = stageData.data || {};
+            
+            // Check if system integration is needed based on rostering preferences
+            const rosteringPref = currentCustomer.accountCharStages?.rostering_preference?.data;
+            const needsIntegration = rosteringPref && (rosteringPref.usesLMS || rosteringPref.usesSIS || rosteringPref.usesSSO);
+            
+            let html = '';
+            
+            // Show info box if rostering preferences indicate integration is needed
+            if (needsIntegration && !data.status) {
+                const systems = [];
+                if (rosteringPref.lms?.length > 0) systems.push(`LMS (${rosteringPref.lms.join(', ')})`);
+                if (rosteringPref.sis?.length > 0) systems.push(`SIS (${rosteringPref.sis.join(', ')})`);
+                if (rosteringPref.sso?.length > 0) systems.push(`SSO (${rosteringPref.sso.join(', ')})`);
+                
+                html += `
+                    <div style="background: #1e3a5f; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>ℹ️ System Integration Detected</strong>
+                        <p style="margin: 5px 0 0 0;">Account preferences indicate integration needed for: ${systems.join(', ')}</p>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div style="margin-bottom: 20px;">
+                    <strong>${label}?</strong>
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="${stageId}_status" value="yes" ${data.status === 'yes' ? 'checked' : ''}> Yes</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="not_necessary" ${data.status === 'not_necessary' ? 'checked' : ''}> No, not necessary</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="not_scheduled" ${data.status === 'not_scheduled' ? 'checked' : ''}> No, not yet scheduled</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="${stageId}_status" value="other" ${data.status === 'other' ? 'checked' : ''}> Other</label>
+                    </div>
+                    <textarea id="${stageId}_notes" placeholder="Notes..." style="width: 100%; margin-top: 10px;">${data.notes || ''}</textarea>
+                    
+                    ${data.status === 'yes' ? `
+                        <div style="margin-top: 10px;">
+                            <label>Date:</label>
+                            <input type="date" id="${stageId}_date" value="${data.date || new Date().toISOString().split('T')[0]}">
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveOnboardingYesNoData('${stageId}')" class="success">Save</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function saveOnboardingYesNoData(stageId) {
+            if (!currentCustomer.onboardingStages) currentCustomer.onboardingStages = {};
+            if (!currentCustomer.onboardingStages[stageId]) currentCustomer.onboardingStages[stageId] = { data: {} };
+            
+            const data = currentCustomer.onboardingStages[stageId].data;
+            const wasCompleted = currentCustomer.onboardingStages[stageId].completed;
+            const previousStatus = data.status;
+            const stageName = findStageName('onboardingStages', stageId);
+            
+            data.status = document.querySelector(`input[name="${stageId}_status"]:checked`)?.value || '';
+            data.notes = document.getElementById(`${stageId}_notes`).value;
+            
+            // Log any status change
+            if (data.status && data.status !== previousStatus) {
+                logActivity(currentCustomer.id, `Changed ${stageName} status`, `${previousStatus || 'unset'} → ${data.status}`);
+            }
+            
+            if (data.status === 'yes') {
+                const dateInput = document.getElementById(`${stageId}_date`);
+                if (dateInput) data.date = dateInput.value;
+                
+                if (!wasCompleted) {
+                    currentCustomer.onboardingStages[stageId].completed = true;
+                    currentCustomer.onboardingStages[stageId].date = new Date().toISOString();
+                    currentCustomer.onboardingStages[stageId].by = 'Current User';
+                    logActivity(currentCustomer.id, 'Completed stage', stageName);
+                }
+            } else if (wasCompleted && data.status !== 'yes') {
+                // If it was completed but status changed to no/other, mark as incomplete
+                currentCustomer.onboardingStages[stageId].completed = false;
+                delete currentCustomer.onboardingStages[stageId].date;
+                delete currentCustomer.onboardingStages[stageId].by;
+                logActivity(currentCustomer.id, 'Marked stage incomplete', stageName);
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
         }
         
         function showAccountCharStageDetails(stageId) {
-            alert('Account Characteristics timeline details coming soon!');
+            currentStage = stageId;
+            const stage = accountCharStages.find(s => s.id === stageId);
+            const stageData = currentCustomer.accountCharStages?.[stageId] || {};
+            
+            const modal = document.getElementById('stageModal');
+            document.getElementById('modalTitle').textContent = stage.label;
+            
+            let bodyHtml = '';
+            
+            // Show completion info if stage is completed
+            if (stageData.completed) {
+                bodyHtml += `
+                    <div style="background: #1b4332; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>✓ Completed</strong> on ${new Date(stageData.date).toLocaleString()} by ${stageData.by}
+                        <button onclick="markStageIncomplete('accountCharStages', '${stageId}')" class="danger" style="float: right; padding: 4px 8px; font-size: 12px;">Mark Incomplete</button>
+                    </div>
+                `;
+            }
+            
+            // Different content based on stage
+            switch(stageId) {
+                case 'client_type':
+                    bodyHtml += renderClientTypeStage(stageData);
+                    break;
+                case 'juice_edition':
+                    bodyHtml += renderJuiceEditionStage(stageData);
+                    break;
+                case 'rostering_tallies':
+                    bodyHtml += renderRosteringTalliesStage(stageData);
+                    break;
+                case 'rostering_preference':
+                    bodyHtml += renderRosteringPreferenceStage(stageData);
+                    break;
+                default:
+                    bodyHtml = `<div style="color: #888;">Stage details not implemented yet.</div>`;
+            }
+            
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            modal.style.display = 'block';
+        }
+        
+        function renderClientTypeStage(stageData) {
+            const data = stageData.data || {};
+            return `
+                <div style="margin-bottom: 20px;">
+                    <h4>Type of Client</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label><input type="radio" name="clientType" value="District" ${data.clientType === 'District' ? 'checked' : ''}> District</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="clientType" value="School" ${data.clientType === 'School' ? 'checked' : ''}> School</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="clientType" value="Library" ${data.clientType === 'Library' ? 'checked' : ''}> Library</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="clientType" value="Class" ${data.clientType === 'Class' ? 'checked' : ''}> Class</label>
+                    </div>
+                    
+                    <h4>Structure</h4>
+                    <div class="form-group">
+                        <label># of Buildings (if applicable):</label>
+                        <input type="number" id="numberOfBuildings" value="${data.numberOfBuildings || ''}" placeholder="Leave blank if not applicable">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Additional Notes:</label>
+                        <textarea id="clientTypeNotes" style="width: 100%;">${data.notes || ''}</textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveClientTypeData()" class="success">Save</button>
+                </div>
+            `;
+        }
+        
+        function renderJuiceEditionStage(stageData) {
+            const data = stageData.data || {};
+            return `
+                <div style="margin-bottom: 20px;">
+                    <h4>Juice Edition</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label><input type="radio" name="juiceEdition" value="Classroom" ${data.edition === 'Classroom' ? 'checked' : ''}> Classroom</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="juiceEdition" value="Library" ${data.edition === 'Library' ? 'checked' : ''}> Library</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="juiceEdition" value="Both/Hybrid" ${data.edition === 'Both/Hybrid' ? 'checked' : ''}> Both/Hybrid</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Explain if Both/Hybrid:</label>
+                        <textarea id="editionNotes" style="width: 100%;" placeholder="Please explain the hybrid setup...">${data.notes || ''}</textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveJuiceEditionData()" class="success">Save</button>
+                </div>
+            `;
+        }
+        
+        function renderRosteringTalliesStage(stageData) {
+            const data = stageData.data || {};
+            return `
+                <div style="margin-bottom: 20px;">
+                    <h4>Final Account Tallies</h4>
+                    <div class="form-group">
+                        <label>District Admin Accounts:</label>
+                        <input type="number" id="districtAdminAccounts" value="${data.districtAdminAccounts || ''}" placeholder="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Teacher Accounts:</label>
+                        <input type="number" id="teacherAccounts" value="${data.teacherAccounts || ''}" placeholder="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Student Accounts:</label>
+                        <input type="number" id="studentAccounts" value="${data.studentAccounts || ''}" placeholder="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes:</label>
+                        <textarea id="talliesNotes" style="width: 100%;">${data.notes || ''}</textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveRosteringTalliesData()" class="success">Save</button>
+                </div>
+            `;
+        }
+        
+        function renderRosteringPreferenceStage(stageData) {
+            const data = stageData.data || {};
+            const hasLMS = data.usesLMS || data.lms?.length > 0;
+            const hasSIS = data.usesSIS || data.sis?.length > 0;
+            const hasSSO = data.usesSSO || data.sso?.length > 0;
+            const usesSystem = hasLMS || hasSIS || hasSSO;
+            
+            return `
+                <div style="margin-bottom: 20px;">
+                    <h4>Rostering Preference</h4>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: 600;">
+                            <input type="checkbox" id="noSystemIntegration" ${!usesSystem ? 'checked' : ''} onchange="toggleSystemIntegration()"> 
+                            No LMS / SSO / SIS Integration
+                        </label>
+                    </div>
+                    
+                    <div id="manualRosteringOptions" style="display: ${!usesSystem ? 'block' : 'none'}; margin-left: 20px; margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 4px;">
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="radio" name="helpNeeded" value="no" ${data.needsHelp === false ? 'checked' : ''}> They do NOT need help</label>
+                            <label style="margin-left: 20px;"><input type="radio" name="helpNeeded" value="yes" ${data.needsHelp === true ? 'checked' : ''}> They DO need help</label>
+                        </div>
+                        
+                        <h5>Rostering Methods (check all that apply):</h5>
+                        <div style="margin-left: 20px;">
+                            <label style="display: block; margin-bottom: 5px;">
+                                <input type="checkbox" id="manualEntry" ${data.methods?.includes('manual') ? 'checked' : ''}> Manual Entry
+                            </label>
+                            <label style="display: block; margin-bottom: 5px;">
+                                <input type="checkbox" id="directLink" ${data.methods?.includes('directLink') ? 'checked' : ''}> Direct Link
+                            </label>
+                            <label style="display: block; margin-bottom: 5px;">
+                                <input type="checkbox" id="csvUpload" ${data.methods?.includes('csv') ? 'checked' : ''}> CSV Upload
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: 600;">
+                            <input type="checkbox" id="systemIntegration" ${usesSystem ? 'checked' : ''} onchange="toggleSystemIntegration()"> 
+                            Yes LMS / SSO / SIS Integration
+                        </label>
+                    </div>
+                    
+                    <div id="systemOptions" style="display: ${usesSystem ? 'block' : 'none'}; margin-left: 20px; padding: 15px; background: #1a1a1a; border-radius: 4px;">
+                        <h5>LMS Integration</h5>
+                        <div style="margin-left: 20px; margin-bottom: 15px;">
+                            ${renderLMSOptions(data.lms || [])}
+                        </div>
+                        
+                        <h5>SIS Integration</h5>
+                        <div style="margin-left: 20px; margin-bottom: 15px;">
+                            ${renderSISOptions(data.sis || [])}
+                        </div>
+                        
+                        <h5>SSO/ID Management</h5>
+                        <div style="margin-left: 20px; margin-bottom: 15px;">
+                            ${renderSSOOptions(data.sso || [])}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Additional Notes:</label>
+                        <textarea id="rosteringNotes" style="width: 100%;">${data.notes || ''}</textarea>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="saveRosteringPreferenceData()" class="success">Save</button>
+                </div>
+            `;
+        }
+        
+        function renderLMSOptions(selected) {
+            const lmsOptions = ['Blackboard', 'Brightspace by D2L', 'Canvas', 'Google Classroom', 'LTI 1.1', 'LTI 1.3', 'Microsoft Teams', 'Moodle', 'Schoology'];
+            return lmsOptions.map(option => `
+                <label style="display: block; margin-bottom: 5px;">
+                    <input type="checkbox" name="lms" value="${option}" ${selected.includes(option) ? 'checked' : ''}> ${option}
+                </label>
+            `).join('');
+        }
+        
+        function renderSISOptions(selected) {
+            const sisOptions = ['PowerSchool', 'Aeries', 'Aspen', 'Blackbaud', 'Skyward SMS', 'Skyward Qmlativ', 'Veracross', 'Infinite Campus', 'Synergy', 'Renweb FACTS', 'Bromcom', 'Genesis'];
+            return sisOptions.map(option => `
+                <label style="display: block; margin-bottom: 5px;">
+                    <input type="checkbox" name="sis" value="${option}" ${selected.includes(option) ? 'checked' : ''}> ${option}
+                </label>
+            `).join('');
+        }
+        
+        function renderSSOOptions(selected) {
+            const ssoOptions = ['ClassLink', 'Clever', 'RapidIdentity', 'ClassGather', 'HelloID', 'OneLogin'];
+            return ssoOptions.map(option => `
+                <label style="display: block; margin-bottom: 5px;">
+                    <input type="checkbox" name="sso" value="${option}" ${selected.includes(option) ? 'checked' : ''}> ${option}
+                </label>
+            `).join('');
+        }
+        
+        function toggleSystemIntegration() {
+            const noSystem = document.getElementById('noSystemIntegration').checked;
+            const hasSystem = document.getElementById('systemIntegration').checked;
+            
+            // Ensure only one is checked
+            if (noSystem && hasSystem) {
+                if (event.target.id === 'noSystemIntegration') {
+                    document.getElementById('systemIntegration').checked = false;
+                } else {
+                    document.getElementById('noSystemIntegration').checked = false;
+                }
+            }
+            
+            document.getElementById('manualRosteringOptions').style.display = document.getElementById('noSystemIntegration').checked ? 'block' : 'none';
+            document.getElementById('systemOptions').style.display = document.getElementById('systemIntegration').checked ? 'block' : 'none';
+        }
+        
+        function toggleFinanceDocsNeeded() {
+            const noneNeeded = document.getElementById('noneNeeded').checked;
+            document.getElementById('financeDocsContainer').style.display = noneNeeded ? 'none' : 'block';
+        }
+        
+        function saveFinanceComplianceData() {
+            if (!currentCustomer.purchasingStages) currentCustomer.purchasingStages = {};
+            if (!currentCustomer.purchasingStages.finance_compliance) currentCustomer.purchasingStages.finance_compliance = { data: {} };
+            
+            const data = currentCustomer.purchasingStages.finance_compliance.data;
+            const wasCompleted = currentCustomer.purchasingStages.finance_compliance.completed;
+            
+            data.notes = document.getElementById('financeComplianceNotes').value;
+            data.noneNeeded = document.getElementById('noneNeeded').checked;
+            
+            if (!data.noneNeeded) {
+                // Get categories if any are checked
+                data.categories = {
+                    privacy: document.getElementById('privacy').checked,
+                    singleSource: document.getElementById('singleSource').checked,
+                    districtVendor: document.getElementById('districtVendor').checked,
+                    other: document.getElementById('otherCompliance').checked
+                };
+            } else {
+                // Clear all document data if none needed
+                data.categories = {};
+                data.complianceDocs = [];
+                data.quotes = [];
+                data.purchaseOrders = [];
+            }
+            
+            // Mark as completed if "none needed" is checked OR if any categories/documents exist
+            const hasCategories = data.categories && Object.values(data.categories).some(checked => checked);
+            const hasDocuments = (data.complianceDocs && data.complianceDocs.length > 0) ||
+                               (data.quotes && data.quotes.length > 0) ||
+                               (data.purchaseOrders && data.purchaseOrders.length > 0);
+            
+            if ((data.noneNeeded || hasCategories || hasDocuments) && !wasCompleted) {
+                currentCustomer.purchasingStages.finance_compliance.completed = true;
+                currentCustomer.purchasingStages.finance_compliance.date = new Date().toISOString();
+                currentCustomer.purchasingStages.finance_compliance.by = 'Current User';
+                
+                if (data.noneNeeded) {
+                    logActivity(currentCustomer.id, 'Completed stage', 'Finance & Compliance Docs (none needed)');
+                } else {
+                    logActivity(currentCustomer.id, 'Completed stage', 'Finance & Compliance Docs');
+                }
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function saveClientTypeData() {
+            if (!currentCustomer.accountCharStages) currentCustomer.accountCharStages = {};
+            if (!currentCustomer.accountCharStages.client_type) currentCustomer.accountCharStages.client_type = { data: {} };
+            
+            const data = currentCustomer.accountCharStages.client_type.data;
+            const wasCompleted = currentCustomer.accountCharStages.client_type.completed;
+            
+            const previousType = data.clientType;
+            data.clientType = document.querySelector('input[name="clientType"]:checked')?.value || '';
+            data.numberOfBuildings = document.getElementById('numberOfBuildings').value;
+            data.notes = document.getElementById('clientTypeNotes').value;
+            
+            if (data.clientType !== previousType) {
+                logActivity(currentCustomer.id, 'Updated client type', `${previousType || 'unset'} → ${data.clientType}`);
+            }
+            
+            if (data.clientType && !wasCompleted) {
+                currentCustomer.accountCharStages.client_type.completed = true;
+                currentCustomer.accountCharStages.client_type.date = new Date().toISOString();
+                currentCustomer.accountCharStages.client_type.by = 'Current User';
+                logActivity(currentCustomer.id, 'Completed stage', 'Client Type & Structure');
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function saveJuiceEditionData() {
+            if (!currentCustomer.accountCharStages) currentCustomer.accountCharStages = {};
+            if (!currentCustomer.accountCharStages.juice_edition) currentCustomer.accountCharStages.juice_edition = { data: {} };
+            
+            const data = currentCustomer.accountCharStages.juice_edition.data;
+            const wasCompleted = currentCustomer.accountCharStages.juice_edition.completed;
+            
+            const previousEdition = data.edition;
+            data.edition = document.querySelector('input[name="juiceEdition"]:checked')?.value || '';
+            data.notes = document.getElementById('editionNotes').value;
+            
+            if (data.edition !== previousEdition) {
+                logActivity(currentCustomer.id, 'Updated Juice edition', `${previousEdition || 'unset'} → ${data.edition}`);
+            }
+            
+            if (data.edition && !wasCompleted) {
+                currentCustomer.accountCharStages.juice_edition.completed = true;
+                currentCustomer.accountCharStages.juice_edition.date = new Date().toISOString();
+                currentCustomer.accountCharStages.juice_edition.by = 'Current User';
+                logActivity(currentCustomer.id, 'Completed stage', 'Juice Edition');
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function saveRosteringTalliesData() {
+            if (!currentCustomer.accountCharStages) currentCustomer.accountCharStages = {};
+            if (!currentCustomer.accountCharStages.rostering_tallies) currentCustomer.accountCharStages.rostering_tallies = { data: {} };
+            
+            const data = currentCustomer.accountCharStages.rostering_tallies.data;
+            const wasCompleted = currentCustomer.accountCharStages.rostering_tallies.completed;
+            
+            data.districtAdminAccounts = document.getElementById('districtAdminAccounts').value;
+            data.teacherAccounts = document.getElementById('teacherAccounts').value;
+            data.studentAccounts = document.getElementById('studentAccounts').value;
+            data.notes = document.getElementById('talliesNotes').value;
+            
+            const totalAccounts = (parseInt(data.districtAdminAccounts) || 0) + 
+                                  (parseInt(data.teacherAccounts) || 0) + 
+                                  (parseInt(data.studentAccounts) || 0);
+            
+            if (totalAccounts > 0) {
+                logActivity(currentCustomer.id, 'Updated account tallies', 
+                    `Admin: ${data.districtAdminAccounts || 0}, Teachers: ${data.teacherAccounts || 0}, Students: ${data.studentAccounts || 0}`);
+            }
+            
+            if (totalAccounts > 0 && !wasCompleted) {
+                currentCustomer.accountCharStages.rostering_tallies.completed = true;
+                currentCustomer.accountCharStages.rostering_tallies.date = new Date().toISOString();
+                currentCustomer.accountCharStages.rostering_tallies.by = 'Current User';
+                logActivity(currentCustomer.id, 'Completed stage', 'Account Tallies');
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
+        }
+        
+        function saveRosteringPreferenceData() {
+            if (!currentCustomer.accountCharStages) currentCustomer.accountCharStages = {};
+            if (!currentCustomer.accountCharStages.rostering_preference) currentCustomer.accountCharStages.rostering_preference = { data: {} };
+            
+            const data = currentCustomer.accountCharStages.rostering_preference.data;
+            const wasCompleted = currentCustomer.accountCharStages.rostering_preference.completed;
+            
+            // Check if using system integration
+            const usesSystem = document.getElementById('systemIntegration').checked;
+            
+            if (!usesSystem) {
+                // Manual rostering
+                data.usesLMS = false;
+                data.usesSIS = false;
+                data.usesSSO = false;
+                data.needsHelp = document.querySelector('input[name="helpNeeded"]:checked')?.value === 'yes';
+                
+                // Collect methods
+                data.methods = [];
+                if (document.getElementById('manualEntry').checked) data.methods.push('manual');
+                if (document.getElementById('directLink').checked) data.methods.push('directLink');
+                if (document.getElementById('csvUpload').checked) data.methods.push('csv');
+                
+                // Clear system options
+                data.lms = [];
+                data.sis = [];
+                data.sso = [];
+            } else {
+                // System integration
+                data.methods = [];
+                data.needsHelp = null;
+                
+                // Collect LMS options
+                data.lms = Array.from(document.querySelectorAll('input[name="lms"]:checked')).map(cb => cb.value);
+                data.usesLMS = data.lms.length > 0;
+                
+                // Collect SIS options
+                data.sis = Array.from(document.querySelectorAll('input[name="sis"]:checked')).map(cb => cb.value);
+                data.usesSIS = data.sis.length > 0;
+                
+                // Collect SSO options
+                data.sso = Array.from(document.querySelectorAll('input[name="sso"]:checked')).map(cb => cb.value);
+                data.usesSSO = data.sso.length > 0;
+            }
+            
+            data.notes = document.getElementById('rosteringNotes').value;
+            
+            // Log the preference
+            if (!usesSystem && data.methods.length > 0) {
+                logActivity(currentCustomer.id, 'Set rostering preference', 
+                    `Manual: ${data.methods.join(', ')} (needs help: ${data.needsHelp ? 'yes' : 'no'})`);
+            } else if (usesSystem) {
+                const systems = [];
+                if (data.lms.length > 0) systems.push(`LMS: ${data.lms.join(', ')}`);
+                if (data.sis.length > 0) systems.push(`SIS: ${data.sis.join(', ')}`);
+                if (data.sso.length > 0) systems.push(`SSO: ${data.sso.join(', ')}`);
+                logActivity(currentCustomer.id, 'Set rostering preference', `System integration: ${systems.join('; ')}`);
+            }
+            
+            // Mark as completed if preferences are set
+            if ((!usesSystem && data.methods.length > 0) || (usesSystem && (data.lms.length > 0 || data.sis.length > 0 || data.sso.length > 0))) {
+                if (!wasCompleted) {
+                    currentCustomer.accountCharStages.rostering_preference.completed = true;
+                    currentCustomer.accountCharStages.rostering_preference.date = new Date().toISOString();
+                    currentCustomer.accountCharStages.rostering_preference.by = 'Current User';
+                    logActivity(currentCustomer.id, 'Completed stage', 'Rostering Preferences');
+                }
+            }
+            
+            saveCustomersToLocalStorage();
+            renderJourneyView();
+            closeModal();
         }
         
         function checkFreshSales() {
             // Placeholder for future FreshSales integration
             alert('FreshSales integration coming soon!');
+        }
+        
+        // Column Management Functions
+        function showColumnManager() {
+            const modal = document.getElementById('columnManagerModal');
+            renderColumnManager();
+            modal.style.display = 'block';
+        }
+        
+        function closeColumnManager() {
+            document.getElementById('columnManagerModal').style.display = 'none';
+        }
+        
+        function renderColumnManager() {
+            const container = document.getElementById('columnList');
+            
+            // Sort columns by current order
+            const sortedColumns = Object.entries(columnConfig)
+                .sort((a, b) => a[1].order - b[1].order);
+            
+            let html = '';
+            
+            sortedColumns.forEach(([key, config], index) => {
+                html += `
+                    <div class="column-item" draggable="true" data-column="${key}" 
+                         ondragstart="handleColumnDragStart(event)" 
+                         ondragover="handleColumnDragOver(event)"
+                         ondrop="handleColumnDrop(event)"
+                         ondragend="handleColumnDragEnd(event)">
+                        <div class="column-drag-handle">⋮⋮</div>
+                        <input type="checkbox" class="column-checkbox" 
+                               ${config.visible ? 'checked' : ''} 
+                               onchange="toggleColumnVisibility('${key}', this.checked)">
+                        <div class="column-label">${config.label}</div>
+                        <div class="column-order">${config.order}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function toggleColumnVisibility(columnKey, visible) {
+            columnConfig[columnKey].visible = visible;
+            // Update the order display
+            renderColumnManager();
+        }
+        
+        let draggedColumn = null;
+        
+        function handleColumnDragStart(event) {
+            draggedColumn = event.target.dataset.column;
+            event.target.classList.add('dragging');
+        }
+        
+        function handleColumnDragOver(event) {
+            event.preventDefault();
+            const item = event.currentTarget;
+            if (!item.classList.contains('dragging')) {
+                item.classList.add('drag-over');
+            }
+        }
+        
+        function handleColumnDrop(event) {
+            event.preventDefault();
+            const dropTarget = event.currentTarget.dataset.column;
+            
+            if (draggedColumn && dropTarget && draggedColumn !== dropTarget) {
+                // Swap the order of the columns
+                const draggedOrder = columnConfig[draggedColumn].order;
+                const targetOrder = columnConfig[dropTarget].order;
+                
+                columnConfig[draggedColumn].order = targetOrder;
+                columnConfig[dropTarget].order = draggedOrder;
+                
+                renderColumnManager();
+            }
+            
+            // Remove all drag-over classes
+            document.querySelectorAll('.column-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+        
+        function handleColumnDragEnd(event) {
+            event.target.classList.remove('dragging');
+            draggedColumn = null;
+            
+            // Remove all drag-over classes
+            document.querySelectorAll('.column-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+        
+        function resetColumns() {
+            columnConfig = {
+                account: { label: 'Account', visible: true, order: 1 },
+                state: { label: 'State', visible: true, order: 2 },
+                type: { label: 'Type', visible: true, order: 3 },
+                implementation: { label: 'Implementation', visible: true, order: 4 },
+                contractDuration: { label: 'Contract Duration', visible: true, order: 5 },
+                startDate: { label: 'Start Date', visible: true, order: 6 },
+                endDate: { label: 'End Date', visible: true, order: 7 },
+                teachers: { label: 'Teachers', visible: true, order: 8 },
+                districtAdmins: { label: 'District Admins', visible: true, order: 9 }
+            };
+            currentSort = { column: 'account', direction: 'asc' };
+            renderColumnManager();
+        }
+        
+        function saveColumnConfig() {
+            // Save to localStorage
+            localStorage.setItem('juiceColumnConfig', JSON.stringify(columnConfig));
+            closeColumnManager();
+            renderCustomerList();
+            showDataStatus('Column configuration saved');
+        }
+        
+        // Load column config on startup
+        function loadColumnConfig() {
+            const stored = localStorage.getItem('juiceColumnConfig');
+            if (stored) {
+                columnConfig = JSON.parse(stored);
+            }
+        }
+        
+        // Contact Management Functions
+        function renderContactsDisplay() {
+            const contacts = currentCustomer.contacts || {};
+            
+            return `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div>
+                        <h5 style="color: #64b5f6; margin: 0 0 10px 0;">Sales Contact</h5>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.salesName || 'Not set'}')">${contacts.salesName || 'Not set'}</div>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.salesEmail || 'Not set'}')" style="margin-top: 5px;">${contacts.salesEmail || 'Not set'}</div>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.salesPhone || 'Not set'}')" style="margin-top: 5px;">${contacts.salesPhone || 'Not set'}</div>
+                    </div>
+                    
+                    <div>
+                        <h5 style="color: #66bb6a; margin: 0 0 10px 0;">Tech Contact</h5>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.techName || 'Not set'}')">${contacts.techName || 'Not set'}</div>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.techEmail || 'Not set'}')" style="margin-top: 5px;">${contacts.techEmail || 'Not set'}</div>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.techPhone || 'Not set'}')" style="margin-top: 5px;">${contacts.techPhone || 'Not set'}</div>
+                    </div>
+                    
+                    <div>
+                        <h5 style="color: #ffa726; margin: 0 0 10px 0;">Other Contact</h5>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.otherName || 'Not set'}')">${contacts.otherName || 'Not set'}</div>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.otherEmail || 'Not set'}')" style="margin-top: 5px;">${contacts.otherEmail || 'Not set'}</div>
+                        <div class="contact-display copyable" onclick="copyToClipboard('${contacts.otherPhone || 'Not set'}')" style="margin-top: 5px;">${contacts.otherPhone || 'Not set'}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderContactsEdit() {
+            const contacts = currentCustomer.contacts || {};
+            
+            return `
+                <div style="margin-bottom: 20px;">
+                    <div class="contact-row" style="grid-template-columns: 80px 1fr 1fr 1fr; font-weight: 600; color: #b0b0b0; margin-bottom: 15px;">
+                        <div></div>
+                        <div style="color: #64b5f6;">Sales Contact</div>
+                        <div style="color: #66bb6a;">Tech Contact</div>
+                        <div style="color: #ffa726;">Other Contact</div>
+                    </div>
+                    
+                    <div class="contact-row">
+                        <div class="contact-label">Name:</div>
+                        <input type="text" class="contact-input" id="salesName" value="${contacts.salesName || ''}" placeholder="Sales contact name">
+                        <input type="text" class="contact-input" id="techName" value="${contacts.techName || ''}" placeholder="Tech contact name">
+                        <input type="text" class="contact-input" id="otherName" value="${contacts.otherName || ''}" placeholder="Other contact name">
+                    </div>
+                    
+                    <div class="contact-row">
+                        <div class="contact-label">Email:</div>
+                        <input type="email" class="contact-input" id="salesEmail" value="${contacts.salesEmail || ''}" placeholder="sales@company.com">
+                        <input type="email" class="contact-input" id="techEmail" value="${contacts.techEmail || ''}" placeholder="tech@company.com">
+                        <input type="email" class="contact-input" id="otherEmail" value="${contacts.otherEmail || ''}" placeholder="other@company.com">
+                    </div>
+                    
+                    <div class="contact-row">
+                        <div class="contact-label">Phone:</div>
+                        <input type="tel" class="contact-input" id="salesPhone" value="${contacts.salesPhone || ''}" placeholder="(555) 123-4567">
+                        <input type="tel" class="contact-input" id="techPhone" value="${contacts.techPhone || ''}" placeholder="(555) 123-4567">
+                        <input type="tel" class="contact-input" id="otherPhone" value="${contacts.otherPhone || ''}" placeholder="(555) 123-4567">
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button onclick="saveContacts()" class="success">Save Contacts</button>
+                        <button onclick="cancelContactEdit()" class="secondary">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getLastAction() {
+            if (!currentCustomer.activityLog || currentCustomer.activityLog.length === 0) {
+                return '<p style="color: #888; font-style: italic;">No activity recorded yet</p>';
+            }
+            
+            const lastActivity = currentCustomer.activityLog[currentCustomer.activityLog.length - 1];
+            const date = new Date(lastActivity.timestamp);
+            const timeAgo = getTimeAgo(date);
+            
+            return `
+                <div style="color: #e0e0e0;">
+                    <strong>${lastActivity.action}:</strong> ${lastActivity.details}
+                </div>
+                <div style="color: #888; font-size: 12px; margin-top: 5px;">
+                    ${timeAgo} by ${lastActivity.by}
+                </div>
+            `;
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+            return date.toLocaleDateString();
+        }
+        
+        function toggleContactEdit() {
+            const displayDiv = document.getElementById('contactsDisplay');
+            const editDiv = document.getElementById('contactsEdit');
+            const btn = document.getElementById('editContactsBtn');
+            
+            if (displayDiv.style.display === 'none') {
+                // Currently editing, switch to display
+                displayDiv.style.display = 'block';
+                editDiv.style.display = 'none';
+                btn.innerHTML = '✏️ Edit Contacts';
+            } else {
+                // Currently displaying, switch to edit
+                displayDiv.style.display = 'none';
+                editDiv.style.display = 'block';
+                btn.innerHTML = '👁️ View Contacts';
+                editDiv.innerHTML = renderContactsEdit();
+            }
+        }
+        
+        function saveContacts() {
+            if (!currentCustomer.contacts) currentCustomer.contacts = {};
+            
+            const previousContacts = {...currentCustomer.contacts};
+            
+            currentCustomer.contacts.salesName = document.getElementById('salesName').value;
+            currentCustomer.contacts.salesEmail = document.getElementById('salesEmail').value;
+            currentCustomer.contacts.salesPhone = document.getElementById('salesPhone').value;
+            currentCustomer.contacts.techName = document.getElementById('techName').value;
+            currentCustomer.contacts.techEmail = document.getElementById('techEmail').value;
+            currentCustomer.contacts.techPhone = document.getElementById('techPhone').value;
+            currentCustomer.contacts.otherName = document.getElementById('otherName').value;
+            currentCustomer.contacts.otherEmail = document.getElementById('otherEmail').value;
+            currentCustomer.contacts.otherPhone = document.getElementById('otherPhone').value;
+            
+            // Log the change
+            const changes = [];
+            Object.keys(currentCustomer.contacts).forEach(key => {
+                if (currentCustomer.contacts[key] !== (previousContacts[key] || '')) {
+                    if (currentCustomer.contacts[key]) {
+                        changes.push(`${key.replace(/([A-Z])/g, ' $1').toLowerCase()}: ${currentCustomer.contacts[key]}`);
+                    }
+                }
+            });
+            
+            if (changes.length > 0) {
+                logActivity(currentCustomer.id, 'Updated contacts', changes.join(', '));
+            }
+            
+            saveCustomersToLocalStorage();
+            
+            // Switch back to display mode
+            toggleContactEdit();
+            renderJourneyView();
+        }
+        
+        function cancelContactEdit() {
+            toggleContactEdit();
+        }
+        
+        function copyToClipboard(text) {
+            if (text === 'Not set' || !text) return;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showDataStatus(`Copied: ${text}`);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showDataStatus(`Copied: ${text}`);
+            });
         }
     </script>
 </body>
