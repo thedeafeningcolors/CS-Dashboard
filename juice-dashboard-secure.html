@@ -1266,7 +1266,7 @@
                         lookupNCESData();
                     });
                 } else {
-                    document.getElementById('contactInfo').innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4><div class="info-row">Contact details not available</div>';
+                    document.getElementById('contactInfo').innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Contact details not available</div>';
                     document.getElementById('historyContent').innerHTML = 'History not available for accounts';
                     updateContextPreview();
                 }
@@ -1305,7 +1305,7 @@
 
         async function loadContactDetails(contactId) {
             const infoDiv = document.getElementById('contactInfo');
-            infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4><div class="info-row">Loading contact details...</div>';
+            infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Loading contact details...</div>';
             
             try {
                 const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}?include=sales_accounts`;
@@ -1322,7 +1322,7 @@
                 const data = await response.json();
                 const contact = data.contact;
                 
-                let infoHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4>';
+                let infoHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4>';
                 
                 // Account info - this is the school district
                 if (contact.sales_accounts && contact.sales_accounts.length > 0) {
@@ -1357,16 +1357,16 @@
                     infoHTML += `</span></div>`;
                 }
                 
-                infoDiv.innerHTML = infoHTML || '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4><div class="info-row">No additional details available</div>';
+                infoDiv.innerHTML = infoHTML || '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">No additional details available</div>';
             } catch (error) {
                 console.error('Error loading contact details:', error);
-                infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4><div class="info-row">Failed to load contact details</div>';
+                infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Failed to load contact details</div>';
             }
         }
 
         async function loadAccountDetails(accountId) {
             const infoDiv = document.getElementById('contactInfo');
-            infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4><div class="info-row">Loading account details...</div>';
+            infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Loading account details...</div>';
             
             try {
                 const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/sales_accounts/${accountId}`;
@@ -1396,7 +1396,7 @@
                 window.currentAccountName = account.name;
             } catch (error) {
                 console.error('Error loading account details:', error);
-                infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\\'s Account Information</h4><div class="info-row">Failed to load account details</div>';
+                infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Failed to load account details</div>';
             }
         }
 
