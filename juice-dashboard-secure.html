@@ -3,21 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Juice - Task Dashboard (Secure)</title>
+    <title>The Juice - Enhanced Task Dashboard</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
         /* Login Screen Styles */
         .login-screen {
             max-width: 400px;
@@ -117,6 +104,19 @@
         
         .main-content {
             display: none;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
         h1 {
@@ -700,10 +700,6 @@
                 <label for="apiKey">FreshSales API Key</label>
                 <input type="password" id="apiKey" placeholder="Enter your FreshSales API key" required>
             </div>
-            <div class="form-group">
-                <label for="baseDomain">Base Domain (optional)</label>
-                <input type="text" id="baseDomain" placeholder="your-domain.myfreshworks.com" value="thejuice-439787933003515753.myfreshworks.com">
-            </div>
             <button type="submit" class="login-btn" id="loginBtn">Access Dashboard</button>
             <div id="loginError" class="error-message"></div>
             <div class="info-text">
@@ -722,19 +718,18 @@
             <div class="logout-section">
                 <button onclick="logout()" class="logout-btn">Logout</button>
             </div>
-            
             <h1>The Juice Task Dashboard</h1>
-            
-            <div id="status" class="status loading">Loading tasks...</div>
-            
-            <div class="task-filters">
-                <button onclick="loadTasks('open')">Open Tasks</button>
-                <button onclick="loadTasks('due_today')" class="secondary">Due Today</button>
-                <button onclick="loadTasks('overdue')" class="secondary">Overdue</button>
-                <button onclick="loadTasks('completed')" class="secondary">Completed</button>
-            </div>
-            
-            <div id="taskList" class="task-list"></div>
+        
+        <div id="status" class="status loading">Loading tasks...</div>
+        
+        <div class="task-filters">
+            <button onclick="loadTasks('open')">Open Tasks</button>
+            <button onclick="loadTasks('due_today')" class="secondary">Due Today</button>
+            <button onclick="loadTasks('overdue')" class="secondary">Overdue</button>
+            <button onclick="loadTasks('completed')" class="secondary">Completed</button>
+        </div>
+        
+        <div id="taskList" class="task-list"></div>
         </div>
     </div>
     
@@ -750,50 +745,21 @@
     <script>
         // Configuration
         let API_KEY = '';
-        let BASE_URL = '';
+        const BASE_URL = 'thejuice-439787933003515753.myfreshworks.com/crm/sales';
         const CALENDLY_LINK = 'https://calendly.com/cris-at-the-juice/30min';
         
-        // Google Sheets configuration
-        const SHEET_ID = '1tQjQRRgGIpWan8sGM-VznFc0WZwGn4pnupS3c8aTlAE';
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-        
-        // Global variables
-        let currentFilter = 'open';
-        let tasks = [];
-        let fullContactHistory = {};
-        let ncesData = [];
-        let currentNCESMatches = [];
-        let districtMemory = {};
-        let includeNCESInContext = false;
-        let currentContactEmail = '';
-        let currentOtherContacts = [];
-        let currentTaskElement = null;
-        
-        // Initialize app
-        window.onload = () => {
-            checkStoredCredentials();
-        };
-        
-        // Check if user has stored credentials
-        function checkStoredCredentials() {
-            try {
-                const storedApiKey = localStorage.getItem('freshsales_api_key');
-                const storedDomain = localStorage.getItem('freshsales_domain');
-                
-                if (storedApiKey && storedDomain) {
-                    API_KEY = storedApiKey;
-                    BASE_URL = storedDomain + '/crm/sales';
-                    showMainContent();
-                    loadTasks('open');
-                    loadNCESData();
-                } else {
-                    showLoginScreen();
-                }
-            } catch (e) {
-                console.error('Error checking stored credentials:', e);
+        // Check for stored credentials on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const storedApiKey = localStorage.getItem('freshsales_api_key');
+            if (storedApiKey) {
+                API_KEY = storedApiKey;
+                showMainContent();
+                loadTasks('open');
+                loadNCESData();
+            } else {
                 showLoginScreen();
             }
-        }
+        });
         
         // Show login screen
         function showLoginScreen() {
@@ -812,7 +778,6 @@
             e.preventDefault();
             
             const apiKey = document.getElementById('apiKey').value.trim();
-            const domain = document.getElementById('baseDomain').value.trim() || 'thejuice-439787933003515753.myfreshworks.com';
             const loginBtn = document.getElementById('loginBtn');
             const errorDiv = document.getElementById('loginError');
             
@@ -828,7 +793,7 @@
             
             // Test the API key by making a simple request
             try {
-                const testUrl = `https://cors-anywhere.herokuapp.com/https://${domain}/crm/sales/api/tasks?per_page=1`;
+                const testUrl = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks?per_page=1`;
                 const response = await fetch(testUrl, {
                     headers: {
                         'Authorization': `Token token=${apiKey}`,
@@ -840,20 +805,17 @@
                 if (response.ok) {
                     // Store credentials
                     localStorage.setItem('freshsales_api_key', apiKey);
-                    localStorage.setItem('freshsales_domain', domain);
-                    
                     API_KEY = apiKey;
-                    BASE_URL = domain + '/crm/sales';
                     
                     showMainContent();
                     loadTasks('open');
                     loadNCESData();
                 } else {
-                    throw new Error('Invalid API key or domain');
+                    throw new Error('Invalid API key');
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                errorDiv.textContent = 'Invalid API key or domain. Please check your credentials.';
+                errorDiv.textContent = 'Invalid API key. Please check your credentials.';
             } finally {
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Access Dashboard';
@@ -863,12 +825,26 @@
         // Logout function
         function logout() {
             localStorage.removeItem('freshsales_api_key');
-            localStorage.removeItem('freshsales_domain');
             API_KEY = '';
-            BASE_URL = '';
             showLoginScreen();
             document.getElementById('apiKey').value = '';
         }
+        
+        // Google Sheets configuration
+        const SHEET_ID = '1tQjQRRgGIpWan8sGM-VznFc0WZwGn4pnupS3c8aTlAE';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+        
+        // Global variables
+        let currentFilter = 'open';
+        let tasks = [];
+        let fullContactHistory = {};
+        let ncesData = [];
+        let currentNCESMatches = [];
+        let districtMemory = {};
+        let includeNCESInContext = false;
+        let currentContactEmail = '';
+        let currentOtherContacts = [];
+        let currentTaskElement = null;
         
         // Load saved district memory from localStorage
         try {
@@ -879,6 +855,7 @@
         } catch (e) {
             console.error('Error loading district memory:', e);
         }
+        
         
         // Load NCES data from Google Sheets
         async function loadNCESData() {
@@ -974,6 +951,314 @@
             return cleaned.trim().toLowerCase();
         }
         
+        // Find matching districts
+        function findMatchingDistricts(searchTerm) {
+            if (!searchTerm || ncesData.length === 0) {
+                console.log('No search term or NCES data not loaded');
+                return [];
+            }
+            
+            // Extract state abbreviation if present in parentheses
+            let stateFilter = null;
+            const stateMatch = searchTerm.match(/\(([A-Z]{2})\)$/);
+            if (stateMatch) {
+                stateFilter = stateMatch[1];
+                searchTerm = searchTerm.replace(/\s*\([A-Z]{2}\)$/, '').trim();
+            }
+            
+            const cleaned = cleanDistrictName(searchTerm);
+            console.log(`Searching for: "${searchTerm}" (cleaned: "${cleaned}")${stateFilter ? ' in state: ' + stateFilter : ''}`);
+            
+            const matches = new Map();
+            let debugCount = 0;
+            
+            ncesData.forEach(row => {
+                const districtName = row['Account'];
+                if (!districtName) return;
+                
+                // If state filter is provided, check it first
+                if (stateFilter && row['State Abbreviation'] !== stateFilter) return;
+                
+                const cleanedDistrict = cleanDistrictName(districtName);
+                
+                // Log first few for debugging
+                if (debugCount < 5 && stateFilter && row['State Abbreviation'] === stateFilter) {
+                    console.log(`Sample ${stateFilter} district: "${districtName}" (cleaned: "${cleanedDistrict}")`);
+                    debugCount++;
+                }
+                
+                // Check for match - try multiple matching strategies
+                let isMatch = false;
+                
+                // Exact match after cleaning
+                if (cleanedDistrict === cleaned) {
+                    isMatch = true;
+                }
+                // Contains match
+                else if (cleanedDistrict.includes(cleaned) || cleaned.includes(cleanedDistrict)) {
+                    isMatch = true;
+                }
+                // Word-by-word match (for cases like "Boston" matching "Boston Public Schools")
+                else {
+                    const searchWords = cleaned.split(/\s+/);
+                    const districtWords = cleanedDistrict.split(/\s+/);
+                    
+                    // Check if all search words are in district name
+                    if (searchWords.every(word => districtWords.includes(word))) {
+                        isMatch = true;
+                    }
+                }
+                
+                if (isMatch) {
+                    const key = `${row['State Abbreviation']}_${districtName}`;
+                    if (!matches.has(key)) {
+                        matches.set(key, {
+                            districtName: districtName,
+                            state: row['State Abbreviation'],
+                            stateName: row['State Name'],
+                            county: row['County Name'],
+                            agencyId: row['Agency ID'],
+                            schools: []
+                        });
+                    }
+                    matches.get(key).schools.push(row);
+                }
+            });
+            
+            const results = Array.from(matches.values());
+            console.log(`Found ${results.length} matches`);
+            return results;
+        }
+        
+        // Show district selection modal
+        function showDistrictModal(matches, accountName) {
+            const modal = document.getElementById('districtModal');
+            const header = document.getElementById('modalHeader');
+            const list = document.getElementById('selectionList');
+            
+            // Group by state
+            const stateGroups = {};
+            matches.forEach(match => {
+                if (!stateGroups[match.state]) {
+                    stateGroups[match.state] = [];
+                }
+                stateGroups[match.state].push(match);
+            });
+            
+            // If multiple states, show state selection first
+            if (Object.keys(stateGroups).length > 1) {
+                header.textContent = `Multiple districts found matching "${accountName}"`;
+                list.innerHTML = '<div style="margin-bottom: 10px;">Select state:</div>';
+                
+                Object.keys(stateGroups).sort().forEach(state => {
+                    const div = document.createElement('div');
+                    div.className = 'selection-item';
+                    div.innerHTML = `
+                        <div class="main-text">${stateGroups[state][0].stateName}</div>
+                        <div class="sub-text">${stateGroups[state].length} district${stateGroups[state].length > 1 ? 's' : ''}</div>
+                    `;
+                    div.onclick = () => showDistrictsForState(stateGroups[state], accountName);
+                    list.appendChild(div);
+                });
+            } else {
+                // Single state, show districts directly
+                showDistrictsForState(matches, accountName);
+            }
+            
+            modal.classList.add('show');
+        }
+        
+        // Show districts for a specific state
+        function showDistrictsForState(districts, accountName) {
+            const header = document.getElementById('modalHeader');
+            const list = document.getElementById('selectionList');
+            
+            if (districts.length === 1) {
+                selectDistrict(districts[0], accountName);
+                closeModal();
+                return;
+            }
+            
+            header.textContent = `Select district in ${districts[0].stateName}:`;
+            list.innerHTML = '';
+            
+            districts.forEach(district => {
+                const div = document.createElement('div');
+                div.className = 'selection-item';
+                div.innerHTML = `
+                    <div class="main-text">${district.districtName}</div>
+                    <div class="sub-text">${district.county} County • ${district.schools.length} schools</div>
+                `;
+                div.onclick = () => {
+                    selectDistrict(district, accountName);
+                    closeModal();
+                };
+                list.appendChild(div);
+            });
+        }
+        
+        // Select a district and display data
+        function selectDistrict(district, accountName) {
+            // Save to memory
+            districtMemory[cleanDistrictName(accountName)] = district.agencyId;
+            localStorage.setItem('districtMemory', JSON.stringify(districtMemory));
+            
+            // Display the data
+            displayNCESData(district);
+        }
+        
+        // Display NCES data in the panel
+        function displayNCESData(district) {
+            const panel = document.getElementById('ncesDataPanel');
+            const display = document.getElementById('ncesDataDisplay');
+            
+            // Calculate statistics
+            let totalStudents = 0;
+            let juiceStudents = 0;
+            let schoolsWithJuice = 0;
+            let elementaryWithJuice = [];
+            let middleSchools = [];
+            let highSchools = [];
+            
+            district.schools.forEach(school => {
+                const total = parseInt(school['Total Students']) || 0;
+                totalStudents += total;
+                
+                // Calculate Juice students (G5-12)
+                let schoolJuiceStudents = 0;
+                for (let grade = 5; grade <= 12; grade++) {
+                    const gradeCol = grade <= 8 ? `G${grade}-Students` : `G${grade}-Students`;
+                    schoolJuiceStudents += parseInt(school[gradeCol]) || 0;
+                }
+                juiceStudents += schoolJuiceStudents;
+                
+                if (schoolJuiceStudents > 0) {
+                    schoolsWithJuice++;
+                    
+                    const schoolInfo = {
+                        name: school['School Name'],
+                        id: school['School ID (12-digit)'],
+                        juiceStudents: schoolJuiceStudents,
+                        totalStudents: total,
+                        level: school['School Level']
+                    };
+                    
+                    if (school['School Level'].includes('Middle')) {
+                        middleSchools.push(schoolInfo);
+                    } else if (school['School Level'].includes('High')) {
+                        highSchools.push(schoolInfo);
+                    } else if (school['School Level'].includes('Elementary') && schoolJuiceStudents > 0) {
+                        elementaryWithJuice.push(schoolInfo);
+                    }
+                }
+            });
+            
+            const juicePercent = totalStudents > 0 ? Math.round((juiceStudents / totalStudents) * 100) : 0;
+            
+            // Determine Title I status
+            let titleIStatus = 'Not Title I';
+            const firstSchool = district.schools[0];
+            if (firstSchool['National School Lunch Program']) {
+                if (firstSchool['National School Lunch Program'].includes('Community Eligibility')) {
+                    titleIStatus = 'High-poverty district (100% eligible)';
+                } else if (firstSchool['National School Lunch Program'].toLowerCase() === 'yes') {
+                    titleIStatus = 'Title I eligible';
+                }
+            }
+            
+            // Build display HTML
+            let html = `
+                <div class="nces-item"><strong>District:</strong> ${district.districtName} (ID: ${district.agencyId})</div>
+                <div class="nces-item"><strong>Location:</strong> ${district.county}, ${district.state}</div>
+                <div class="nces-item"><strong>Total Students:</strong> ${totalStudents.toLocaleString()}</div>
+                <div class="nces-item"><strong>Juice Students (G5-12):</strong> ${juiceStudents.toLocaleString()} (${juicePercent}%)</div>
+                <div class="nces-item"><strong>Schools with Juice Grades:</strong> ${schoolsWithJuice} of ${district.schools.length} total</div>
+                <div class="nces-item" style="padding-left: 40px;">
+                    <a href="javascript:void(0)" onclick="toggleSchoolBreakdown()" style="color: #64b5f6; text-decoration: none;">
+                        <span id="schoolToggle">▶</span> Show school breakdown
+                    </a>
+                </div>
+                <div id="schoolBreakdown" class="school-breakdown">
+            `;
+            
+            if (middleSchools.length > 0) {
+                html += '<div class="school-group"><h5>Middle Schools (' + middleSchools.length + '):</h5>';
+                middleSchools.forEach(school => {
+                    html += `<div class="school-item">• ${school.name} (ID: ${school.id})<br>&nbsp;&nbsp;└─ ${school.juiceStudents} Juice students</div>`;
+                });
+                html += '</div>';
+            }
+            
+            if (elementaryWithJuice.length > 0) {
+                html += '<div class="school-group"><h5>Elementary with G5-6 (' + elementaryWithJuice.length + '):</h5>';
+                elementaryWithJuice.forEach(school => {
+                    html += `<div class="school-item">• ${school.name} (ID: ${school.id})<br>&nbsp;&nbsp;└─ ${school.juiceStudents} Juice students in G5-6 (of ${school.totalStudents} total)</div>`;
+                });
+                html += '</div>';
+            }
+            
+            if (highSchools.length > 0) {
+                html += '<div class="school-group"><h5>High Schools (' + highSchools.length + '):</h5>';
+                highSchools.forEach(school => {
+                    html += `<div class="school-item">• ${school.name} (ID: ${school.id})<br>&nbsp;&nbsp;└─ ${school.juiceStudents} Juice students (G9-12)</div>`;
+                });
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            html += `<div class="nces-item"><strong>Title I:</strong> ${titleIStatus}</div>`;
+            
+            // Add address and website if available
+            if (firstSchool['Street Address']) {
+                html += `<div class="nces-item"><strong>Address:</strong> ${firstSchool['Street Address']}, ${firstSchool['City']}, ${firstSchool['State Abbreviation']} ${firstSchool['Zip Code']}</div>`;
+            }
+            if (firstSchool['Web Site URL']) {
+                const url = firstSchool['Web Site URL'].trim();
+                // Ensure URL has protocol
+                const fullUrl = url.startsWith('http') ? url : `http://${url}`;
+                html += `<div class="nces-item"><strong>Website:</strong> <a href="${fullUrl}" target="_blank" style="color: #64b5f6;">${url}</a></div>`;
+            }
+            
+            display.innerHTML = html;
+            panel.style.display = 'block';
+            
+            // Store current matches for context generation
+            currentNCESMatches = district;
+        }
+        
+        // Toggle NCES panel visibility
+        function toggleNCESPanel() {
+            const toggle = document.getElementById('ncesToggle');
+            const content = document.getElementById('ncesContent');
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                toggle.classList.remove('expanded');
+            } else {
+                content.classList.add('show');
+                toggle.classList.add('expanded');
+            }
+        }
+        
+        // Toggle school breakdown visibility
+        function toggleSchoolBreakdown() {
+            const breakdown = document.getElementById('schoolBreakdown');
+            const toggle = document.getElementById('schoolToggle');
+            
+            if (breakdown.classList.contains('show')) {
+                breakdown.classList.remove('show');
+                toggle.textContent = '▶';
+            } else {
+                breakdown.classList.add('show');
+                toggle.textContent = '▼';
+            }
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('districtModal').classList.remove('show');
+        }
+        
         // Simple Gmail open
         function openGmailSimple() {
             if (currentContactEmail) {
@@ -993,13 +1278,12 @@
             }
         }
         
+        // Gmail compose for specific task
+        function openGmailForTask(email) {
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`, '_blank');
+        }
+        
         async function loadTasks(filter) {
-            if (!API_KEY || !BASE_URL) {
-                document.getElementById('status').className = 'status error';
-                document.getElementById('status').textContent = 'Please log in first';
-                return;
-            }
-            
             currentFilter = filter;
             const status = document.getElementById('status');
             const taskList = document.getElementById('taskList');
@@ -1096,8 +1380,6 @@
         }
         
         async function completeTaskOnly(taskId) {
-            if (!API_KEY || !BASE_URL) return;
-            
             const status = document.getElementById('status');
             
             try {
@@ -1129,8 +1411,52 @@
             }
         }
         
-        // TO CONTINUE: I need to add all the remaining functions from the original dashboard
-        // Let me continue with the complete implementation...
+        async function toggleTask(taskId, isChecked, contactName, targetableId, targetableType, taskTitle, taskDescription) {
+            const status = document.getElementById('status');
+            
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks/${taskId}`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        task: { status: isChecked ? 1 : 0 }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                
+                status.className = 'status success';
+                status.textContent = isChecked ? 'Task completed!' : 'Task reopened';
+                
+                if (isChecked && targetableId && targetableType) {
+                    showQuickTaskForm(contactName, targetableId, targetableType, taskId, taskTitle, taskDescription);
+                }
+                
+                // Reload tasks after 2 seconds
+                setTimeout(() => loadTasks(currentFilter), 2000);
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `Error updating task: ${error.message}`;
+                // Revert checkbox
+                document.querySelector(`input[onchange*="${taskId}"]`).checked = !isChecked;
+            }
+        }
+        
+        function toggleContactNoteField() {
+            const checkbox = document.getElementById('alsoAddContactNote');
+            const noteRow = document.getElementById('contactNoteRow');
+            noteRow.style.display = checkbox.checked ? 'flex' : 'none';
+            if (!checkbox.checked) {
+                document.getElementById('contactNoteText').value = '';
+            }
+        }
         
         async function showQuickTaskForm(contactName, contactId, contactType, originalTaskId = null, previousTitle = '', previousNotes = '') {
             // Find the task element
@@ -1275,34 +1601,141 @@
                 taskElement.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
             }
         }
-
-        function toggleContactNoteField() {
-            const checkbox = document.getElementById('alsoAddContactNote');
-            const noteRow = document.getElementById('contactNoteRow');
-            noteRow.style.display = checkbox.checked ? 'flex' : 'none';
-            if (!checkbox.checked) {
-                document.getElementById('contactNoteText').value = '';
-            }
-        }
-
-        function hideQuickTaskForm() {
-            const form = document.getElementById('quickTaskForm');
-            if (form) {
-                form.remove();
-            }
-            
-            // Remove expanded class from task
-            if (currentTaskElement) {
-                currentTaskElement.classList.remove('expanded');
-                currentTaskElement = null;
-            }
-            
-            // Reset variables
-            currentNCESMatches = [];
-            currentContactEmail = '';
+        
+        async function loadOtherContacts(taskId) {
             currentOtherContacts = [];
+            const otherContactsDiv = document.getElementById('otherContactsDisplay');
+            
+            try {
+                // For now, we'll just show "None" since we'd need additional API calls to get other contacts
+                // This could be expanded in the future
+                otherContactsDiv.innerHTML = '<strong>Other Associated Contacts:</strong> <span>None</span>';
+            } catch (error) {
+                console.error('Error loading other contacts:', error);
+                otherContactsDiv.innerHTML = '<strong>Other Associated Contacts:</strong> <span>None</span>';
+            }
         }
-
+        
+        async function markOriginalComplete() {
+            const originalTaskId = document.getElementById('originalTaskId').value;
+            if (originalTaskId) {
+                await completeTaskOnly(originalTaskId);
+            }
+        }
+        
+        async function loadAccountDetails(accountId) {
+            const infoDiv = document.getElementById('contactInfo');
+            infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Loading account details...</div>';
+            
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/sales_accounts/${accountId}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load account details');
+                
+                const data = await response.json();
+                const account = data.sales_account;
+                
+                let infoHTML = `<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact's Account Information</h4>`;
+                infoHTML += `<div class="info-row"><strong>Account:</strong> <span style="font-weight: 600; color: #64b5f6;">${account.name}</span></div>`;
+                
+                if (account.city || account.state) {
+                    infoHTML += `<div class="info-row"><strong>Location:</strong> ${[account.city, account.state].filter(Boolean).join(', ')}</div>`;
+                }
+                
+                infoDiv.innerHTML = infoHTML;
+                
+                // Store account name for NCES lookup
+                window.currentAccountName = account.name;
+            } catch (error) {
+                console.error('Error loading account details:', error);
+                infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Failed to load account details</div>';
+            }
+        }
+        
+        // Lookup NCES data for current contact/account
+        function lookupNCESData() {
+            const accountName = window.currentAccountName || document.getElementById('quickContactName').value;
+            if (!accountName || ncesData.length === 0) {
+                console.log('No account name or NCES data not loaded yet');
+                return;
+            }
+            
+            console.log('Looking up NCES data for:', accountName);
+            
+            // Check memory first
+            const cleanedName = cleanDistrictName(accountName);
+            if (districtMemory[cleanedName]) {
+                // Load from memory
+                const savedAgencyId = districtMemory[cleanedName];
+                const savedDistrict = findDistrictByAgencyId(savedAgencyId);
+                if (savedDistrict) {
+                    displayNCESData(savedDistrict);
+                    return;
+                }
+            }
+            
+            // Find matches
+            const matches = findMatchingDistricts(accountName);
+            
+            if (matches.length === 0) {
+                // No matches found
+                console.log('No NCES matches found');
+                document.getElementById('ncesDataPanel').style.display = 'none';
+                
+                // Try without state abbreviation if present
+                if (accountName.includes('(') && accountName.includes(')')) {
+                    const nameWithoutState = accountName.replace(/\s*\([A-Z]{2}\)$/, '').trim();
+                    console.log('Retrying without state:', nameWithoutState);
+                    const retryMatches = findMatchingDistricts(nameWithoutState);
+                    if (retryMatches.length > 0) {
+                        if (retryMatches.length === 1) {
+                            selectDistrict(retryMatches[0], accountName);
+                        } else {
+                            showDistrictModal(retryMatches, accountName);
+                        }
+                    }
+                }
+            } else if (matches.length === 1) {
+                // Single match, display directly
+                selectDistrict(matches[0], accountName);
+            } else {
+                // Multiple matches, show selection
+                showDistrictModal(matches, accountName);
+            }
+        }
+        
+        // Find district by agency ID
+        function findDistrictByAgencyId(agencyId) {
+            const matches = new Map();
+            
+            ncesData.forEach(row => {
+                if (row['Agency ID'] === agencyId) {
+                    const key = `${row['State Abbreviation']}_${row['Account']}`;
+                    if (!matches.has(key)) {
+                        matches.set(key, {
+                            districtName: row['Account'],
+                            state: row['State Abbreviation'],
+                            stateName: row['State Name'],
+                            county: row['County Name'],
+                            agencyId: row['Agency ID'],
+                            schools: []
+                        });
+                    }
+                    matches.get(key).schools.push(row);
+                }
+            });
+            
+            const districts = Array.from(matches.values());
+            return districts.length > 0 ? districts[0] : null;
+        }
+        
         async function loadContactDetails(contactId) {
             const infoDiv = document.getElementById('contactInfo');
             infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Loading contact details...</div>';
@@ -1363,43 +1796,7 @@
                 infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Failed to load contact details</div>';
             }
         }
-
-        async function loadAccountDetails(accountId) {
-            const infoDiv = document.getElementById('contactInfo');
-            infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Loading account details...</div>';
-            
-            try {
-                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/sales_accounts/${accountId}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Token token=${API_KEY}`,
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                
-                if (!response.ok) throw new Error('Failed to load account details');
-                
-                const data = await response.json();
-                const account = data.sales_account;
-                
-                let infoHTML = `<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact's Account Information</h4>`;
-                infoHTML += `<div class="info-row"><strong>Account:</strong> <span style="font-weight: 600; color: #64b5f6;">${account.name}</span></div>`;
-                
-                if (account.city || account.state) {
-                    infoHTML += `<div class="info-row"><strong>Location:</strong> ${[account.city, account.state].filter(Boolean).join(', ')}</div>`;
-                }
-                
-                infoDiv.innerHTML = infoHTML;
-                
-                // Store account name for NCES lookup
-                window.currentAccountName = account.name;
-            } catch (error) {
-                console.error('Error loading account details:', error);
-                infoDiv.innerHTML = '<h4 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">Contact\'s Account Information</h4><div class="info-row">Failed to load account details</div>';
-            }
-        }
-
+        
         async function loadContactHistory(contactId) {
             const historyContent = document.getElementById('historyContent');
             historyContent.innerHTML = '<div class="loading-spinner"></div>Loading notes...';
@@ -1447,23 +1844,48 @@
                 historyContent.innerHTML = '<div class="history-item">Failed to load contact notes</div>';
             }
         }
-
+        
+        function hideQuickTaskForm() {
+            const form = document.getElementById('quickTaskForm');
+            if (form) {
+                form.remove();
+            }
+            
+            // Remove expanded class from task
+            if (currentTaskElement) {
+                currentTaskElement.classList.remove('expanded');
+                currentTaskElement = null;
+            }
+            
+            // Reset variables
+            currentNCESMatches = [];
+            currentContactEmail = '';
+            currentOtherContacts = [];
+        }
+        
+        // Update context preview when form fields change
         async function updateContextPreview() {
             document.getElementById('contextPreview').textContent = 'Loading context...';
             const context = await generateAIContextText(false);
             document.getElementById('contextPreview').textContent = context;
         }
-
+        
+        async function fetchEmailsFor(email) {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycby3nsP2K33sK4_-KFr9QdHQjR4SwSeTrtIeTpp4jGtV_Yhz9mo0gLaVnPtfUwDJcQG5nw/exec?email=' + encodeURIComponent(email));
+            if (!resp.ok) return [];
+            return await resp.json();
+        }
+        
         async function generateAndCopyAIContext() {
             const contextText = await generateAIContextText(false);
             copyToClipboard(contextText);
         }
-
+        
         async function generateAndCopyAIContextWithNCES() {
             const contextText = await generateAIContextText(true);
             copyToClipboard(contextText);
         }
-
+        
         function copyToClipboard(text) {
             try {
                 navigator.clipboard.writeText(text).then(() => {
@@ -1480,7 +1902,7 @@
                 alert('Failed to copy context. Please copy manually from the preview box.');
             }
         }
-
+        
         async function generateAIContextText(includeNCES) {
             const contactName = document.getElementById('quickContactName').value;
             const taskTitle = document.getElementById('quickTaskTitle').value;
@@ -1488,28 +1910,70 @@
             const contactInfo = document.getElementById('contactInfo').innerText;
             
             // Extract key details from contact info
-            const emailMatch = contactInfo.match(/Email: (.+?)(?:\\n|$)/);
+            const emailMatch = contactInfo.match(/Email: (.+?)(?:\n|$)/);
             const email = emailMatch ? emailMatch[1] : 'Unknown';
-            const schoolMatch = contactInfo.match(/Account \\(School\\/District\\): (.+?)(?:\\n|$)/);
+            const schoolMatch = contactInfo.match(/Account \(School\/District\): (.+?)(?:\n|$)/);
             const schoolDistrict = schoolMatch ? schoolMatch[1] : 'Unknown School/District';
-            const locationMatch = contactInfo.match(/Location: (.+?)(?:\\n|$)/);
+            const locationMatch = contactInfo.match(/Location: (.+?)(?:\n|$)/);
             const location = locationMatch ? locationMatch[1] : 'Unknown';
-            const phoneMatch = contactInfo.match(/Phone: (.+?)(?:\\n|$)/);
+            const phoneMatch = contactInfo.match(/Phone: (.+?)(?:\n|$)/);
             const phone = phoneMatch ? phoneMatch[1] : '';
             
             // Extract tags if present
-            const tagsMatch = contactInfo.match(/Tags: (.+?)(?:\\n|$)/);
+            const tagsMatch = contactInfo.match(/Tags: (.+?)(?:\n|$)/);
             const tags = tagsMatch ? tagsMatch[1].replace(/<[^>]*>/g, ' ').trim() : '';
             
             // Build comprehensive history
             let completeHistory = '';
             
+            // Add Gmail emails
+            try {
+                console.log('Fetching emails for:', email);
+                const gmailEmails = await fetchEmailsFor(email);
+                console.log('Gmail results:', gmailEmails);
+                if (gmailEmails && gmailEmails.length > 0) {
+                    completeHistory += '\nGMAIL EMAILS HISTORY:\n';
+                    gmailEmails.forEach(m => {
+                        completeHistory += `- ${new Date(m.date).toLocaleDateString()} ${m.subject}\n${m.body}\n`;
+                    });
+                }
+            } catch (error) {
+                console.error('Gmail fetch error:', error);
+                // Continue without Gmail data
+            }
+            
+            // Add all tasks (both completed and open)
+            if (fullContactHistory.tasks && fullContactHistory.tasks.length > 0) {
+                completeHistory += '\nTASK HISTORY:\n';
+                fullContactHistory.tasks.forEach(task => {
+                    const date = new Date(task.due_date).toLocaleDateString();
+                    const status = task.status === 1 ? '✓ Completed' : '○ Open';
+                    completeHistory += `- ${status}: "${task.title}" (Due: ${date})`;
+                    if (task.description) {
+                        completeHistory += `\n  Notes: ${task.description}`;
+                    }
+                    completeHistory += '\n';
+                });
+            }
+            
             // Add all notes
             if (fullContactHistory.notes && fullContactHistory.notes.length > 0) {
-                completeHistory += '\\nNOTES HISTORY:\\n';
+                completeHistory += '\nNOTES HISTORY:\n';
                 fullContactHistory.notes.forEach(note => {
                     const date = new Date(note.created_at).toLocaleDateString();
-                    completeHistory += `- ${date}: ${note.description}\\n`;
+                    completeHistory += `- ${date}: ${note.description}\n`;
+                });
+            }
+            
+            // Add email history
+            if (fullContactHistory.emails && fullContactHistory.emails.length > 0) {
+                completeHistory += '\nEMAIL HISTORY:\n';
+                fullContactHistory.emails.forEach(email => {
+                    const date = new Date(email.created_at).toLocaleDateString();
+                    const type = email.conversation_type === 'email_incoming' ? 'Received' : 'Sent';
+                    const subject = email.subject || 'No subject';
+                    const preview = email.snippet || email.body || '';
+                    completeHistory += `- ${type} (${date}): "${subject}"${preview ? ' - ' + preview.substring(0, 100) + '...' : ''}\n`;
                 });
             }
             
@@ -1526,9 +1990,9 @@ ${tags ? `- Tags: ${tags}` : ''}`;
             
             // Add NCES data if requested and available
             if (includeNCES && currentNCESMatches && currentNCESMatches.schools) {
-                contextText += '\\n\\nNCES DISTRICT DATA:\\n';
-                contextText += `- District: ${currentNCESMatches.districtName} (ID: ${currentNCESMatches.agencyId})\\n`;
-                contextText += `- Location: ${currentNCESMatches.county} County, ${currentNCESMatches.state}\\n`;
+                contextText += '\n\nNCES DISTRICT DATA:\n';
+                contextText += `- District: ${currentNCESMatches.districtName} (ID: ${currentNCESMatches.agencyId})\n`;
+                contextText += `- Location: ${currentNCESMatches.county} County, ${currentNCESMatches.state}\n`;
                 
                 // Calculate stats
                 let totalStudents = 0;
@@ -1556,15 +2020,31 @@ ${tags ? `- Tags: ${tags}` : ''}`;
                     }
                 });
                 
-                contextText += `- Total Students: ${totalStudents.toLocaleString()}\\n`;
-                contextText += `- Juice Students (G5-12): ${juiceStudents.toLocaleString()} (${Math.round((juiceStudents/totalStudents)*100)}%)\\n`;
-                contextText += `- Schools with Juice Grades: ${schoolsWithJuice} of ${currentNCESMatches.schools.length}\\n`;
-                if (middleCount > 0) contextText += `  • ${middleCount} Middle Schools\\n`;
-                if (elemWithJuice > 0) contextText += `  • ${elemWithJuice} Elementary (G5-6)\\n`;
-                if (highCount > 0) contextText += `  • ${highCount} High Schools\\n`;
+                contextText += `- Total Students: ${totalStudents.toLocaleString()}\n`;
+                contextText += `- Juice Students (G5-12): ${juiceStudents.toLocaleString()} (${Math.round((juiceStudents/totalStudents)*100)}%)\n`;
+                contextText += `- Schools with Juice Grades: ${schoolsWithJuice} of ${currentNCESMatches.schools.length}\n`;
+                if (middleCount > 0) contextText += `  • ${middleCount} Middle Schools\n`;
+                if (elemWithJuice > 0) contextText += `  • ${elemWithJuice} Elementary (G5-6)\n`;
+                if (highCount > 0) contextText += `  • ${highCount} High Schools\n`;
+                
+                // Title I status
+                const firstSchool = currentNCESMatches.schools[0];
+                if (firstSchool['National School Lunch Program']) {
+                    if (firstSchool['National School Lunch Program'].includes('Community Eligibility')) {
+                        contextText += '- Title I: High-poverty district (100% eligible)\n';
+                    } else if (firstSchool['National School Lunch Program'].toLowerCase() === 'yes') {
+                        contextText += '- Title I: Title I eligible\n';
+                    } else {
+                        contextText += '- Title I: Not Title I\n';
+                    }
+                }
+                
+                if (firstSchool['Web Site URL']) {
+                    contextText += `- Website: ${firstSchool['Web Site URL']}\n`;
+                }
             }
             
-            contextText += `\\nCURRENT TASK:
+            contextText += `\nCURRENT TASK:
 - Task: ${taskTitle || '[Creating follow-up task]'}
 ${description ? `- Notes: ${description}` : ''}
 
@@ -1591,14 +2071,7 @@ Please generate a professional K-12 EdTech sales email that:
             
             return contextText;
         }
-
-        async function markOriginalComplete() {
-            const originalTaskId = document.getElementById('originalTaskId').value;
-            if (originalTaskId) {
-                await completeTaskOnly(originalTaskId);
-            }
-        }
-
+        
         async function createQuickTask(alsoCompleteOriginal) {
             const status = document.getElementById('status');
             const title = document.getElementById('quickTaskTitle').value;
@@ -1647,13 +2120,13 @@ Please generate a professional K-12 EdTech sales email that:
                     const contactNoteText = document.getElementById('contactNoteText').value;
                     
                     // Build note with NCES data if available
-                    let noteDescription = contactNoteText || `Task: ${title}\\n\\n${description}`;
+                    let noteDescription = contactNoteText || `Task: ${title}\n\n${description}`;
                     
                     // Add NCES data to note if available
                     if (currentNCESMatches && currentNCESMatches.schools) {
-                        noteDescription += '\\n\\nNCES DISTRICT DATA:\\n';
-                        noteDescription += `- District: ${currentNCESMatches.districtName} (ID: ${currentNCESMatches.agencyId})\\n`;
-                        noteDescription += `- Location: ${currentNCESMatches.county} County, ${currentNCESMatches.state}\\n`;
+                        noteDescription += '\n\nNCES DISTRICT DATA:\n';
+                        noteDescription += `- District: ${currentNCESMatches.districtName} (ID: ${currentNCESMatches.agencyId})\n`;
+                        noteDescription += `- Location: ${currentNCESMatches.county} County, ${currentNCESMatches.state}\n`;
                         
                         // Calculate stats
                         let totalStudents = 0;
@@ -1666,9 +2139,9 @@ Please generate a professional K-12 EdTech sales email that:
                             }
                         });
                         
-                        noteDescription += `- Total Students: ${totalStudents.toLocaleString()}\\n`;
-                        noteDescription += `- Juice Students (G5-12): ${juiceStudents.toLocaleString()} (${Math.round((juiceStudents/totalStudents)*100)}%)\\n`;
-                        noteDescription += `- Schools: ${currentNCESMatches.schools.length}\\n`;
+                        noteDescription += `- Total Students: ${totalStudents.toLocaleString()}\n`;
+                        noteDescription += `- Juice Students (G5-12): ${juiceStudents.toLocaleString()} (${Math.round((juiceStudents/totalStudents)*100)}%)\n`;
+                        noteDescription += `- Schools: ${currentNCESMatches.schools.length}\n`;
                     }
                     
                     const noteData = {
@@ -1724,382 +2197,6 @@ Please generate a professional K-12 EdTech sales email that:
                 status.className = 'status error';
                 status.textContent = `Error: ${error.message}`;
             }
-        }
-
-        // All the NCES functions from original
-        function findMatchingDistricts(searchTerm) {
-            if (!searchTerm || ncesData.length === 0) {
-                console.log('No search term or NCES data not loaded');
-                return [];
-            }
-            
-            // Extract state abbreviation if present in parentheses
-            let stateFilter = null;
-            const stateMatch = searchTerm.match(/\\(([A-Z]{2})\\)$/);
-            if (stateMatch) {
-                stateFilter = stateMatch[1];
-                searchTerm = searchTerm.replace(/\\s*\\([A-Z]{2}\\)$/, '').trim();
-            }
-            
-            const cleaned = cleanDistrictName(searchTerm);
-            console.log(`Searching for: "${searchTerm}" (cleaned: "${cleaned}")${stateFilter ? ' in state: ' + stateFilter : ''}`);
-            
-            const matches = new Map();
-            let debugCount = 0;
-            
-            ncesData.forEach(row => {
-                const districtName = row['Account'];
-                if (!districtName) return;
-                
-                // If state filter is provided, check it first
-                if (stateFilter && row['State Abbreviation'] !== stateFilter) return;
-                
-                const cleanedDistrict = cleanDistrictName(districtName);
-                
-                // Log first few for debugging
-                if (debugCount < 5 && stateFilter && row['State Abbreviation'] === stateFilter) {
-                    console.log(`Sample ${stateFilter} district: "${districtName}" (cleaned: "${cleanedDistrict}")`);
-                    debugCount++;
-                }
-                
-                // Check for match - try multiple matching strategies
-                let isMatch = false;
-                
-                // Exact match after cleaning
-                if (cleanedDistrict === cleaned) {
-                    isMatch = true;
-                }
-                // Contains match
-                else if (cleanedDistrict.includes(cleaned) || cleaned.includes(cleanedDistrict)) {
-                    isMatch = true;
-                }
-                // Word-by-word match (for cases like "Boston" matching "Boston Public Schools")
-                else {
-                    const searchWords = cleaned.split(/\\s+/);
-                    const districtWords = cleanedDistrict.split(/\\s+/);
-                    
-                    // Check if all search words are in district name
-                    if (searchWords.every(word => districtWords.includes(word))) {
-                        isMatch = true;
-                    }
-                }
-                
-                if (isMatch) {
-                    const key = `${row['State Abbreviation']}_${districtName}`;
-                    if (!matches.has(key)) {
-                        matches.set(key, {
-                            districtName: districtName,
-                            state: row['State Abbreviation'],
-                            stateName: row['State Name'],
-                            county: row['County Name'],
-                            agencyId: row['Agency ID'],
-                            schools: []
-                        });
-                    }
-                    matches.get(key).schools.push(row);
-                }
-            });
-            
-            const results = Array.from(matches.values());
-            console.log(`Found ${results.length} matches`);
-            return results;
-        }
-
-        function lookupNCESData() {
-            const accountName = window.currentAccountName || document.getElementById('quickContactName').value;
-            if (!accountName || ncesData.length === 0) {
-                console.log('No account name or NCES data not loaded yet');
-                return;
-            }
-            
-            console.log('Looking up NCES data for:', accountName);
-            
-            // Check memory first
-            const cleanedName = cleanDistrictName(accountName);
-            if (districtMemory[cleanedName]) {
-                // Load from memory
-                const savedAgencyId = districtMemory[cleanedName];
-                const savedDistrict = findDistrictByAgencyId(savedAgencyId);
-                if (savedDistrict) {
-                    displayNCESData(savedDistrict);
-                    return;
-                }
-            }
-            
-            // Find matches
-            const matches = findMatchingDistricts(accountName);
-            
-            if (matches.length === 0) {
-                // No matches found
-                console.log('No NCES matches found');
-                document.getElementById('ncesDataPanel').style.display = 'none';
-                
-                // Try without state abbreviation if present
-                if (accountName.includes('(') && accountName.includes(')')) {
-                    const nameWithoutState = accountName.replace(/\\s*\\([A-Z]{2}\\)$/, '').trim();
-                    console.log('Retrying without state:', nameWithoutState);
-                    const retryMatches = findMatchingDistricts(nameWithoutState);
-                    if (retryMatches.length > 0) {
-                        if (retryMatches.length === 1) {
-                            selectDistrict(retryMatches[0], accountName);
-                        } else {
-                            showDistrictModal(retryMatches, accountName);
-                        }
-                    }
-                }
-            } else if (matches.length === 1) {
-                // Single match, display directly
-                selectDistrict(matches[0], accountName);
-            } else {
-                // Multiple matches, show selection
-                showDistrictModal(matches, accountName);
-            }
-        }
-
-        function findDistrictByAgencyId(agencyId) {
-            const matches = new Map();
-            
-            ncesData.forEach(row => {
-                if (row['Agency ID'] === agencyId) {
-                    const key = `${row['State Abbreviation']}_${row['Account']}`;
-                    if (!matches.has(key)) {
-                        matches.set(key, {
-                            districtName: row['Account'],
-                            state: row['State Abbreviation'],
-                            stateName: row['State Name'],
-                            county: row['County Name'],
-                            agencyId: row['Agency ID'],
-                            schools: []
-                        });
-                    }
-                    matches.get(key).schools.push(row);
-                }
-            });
-            
-            const districts = Array.from(matches.values());
-            return districts.length > 0 ? districts[0] : null;
-        }
-
-        function showDistrictModal(matches, accountName) {
-            const modal = document.getElementById('districtModal');
-            const header = document.getElementById('modalHeader');
-            const list = document.getElementById('selectionList');
-            
-            // Group by state
-            const stateGroups = {};
-            matches.forEach(match => {
-                if (!stateGroups[match.state]) {
-                    stateGroups[match.state] = [];
-                }
-                stateGroups[match.state].push(match);
-            });
-            
-            // If multiple states, show state selection first
-            if (Object.keys(stateGroups).length > 1) {
-                header.textContent = `Multiple districts found matching "${accountName}"`;
-                list.innerHTML = '<div style="margin-bottom: 10px;">Select state:</div>';
-                
-                Object.keys(stateGroups).sort().forEach(state => {
-                    const div = document.createElement('div');
-                    div.className = 'selection-item';
-                    div.innerHTML = `
-                        <div class="main-text">${stateGroups[state][0].stateName}</div>
-                        <div class="sub-text">${stateGroups[state].length} district${stateGroups[state].length > 1 ? 's' : ''}</div>
-                    `;
-                    div.onclick = () => showDistrictsForState(stateGroups[state], accountName);
-                    list.appendChild(div);
-                });
-            } else {
-                // Single state, show districts directly
-                showDistrictsForState(matches, accountName);
-            }
-            
-            modal.classList.add('show');
-        }
-
-        function showDistrictsForState(districts, accountName) {
-            const header = document.getElementById('modalHeader');
-            const list = document.getElementById('selectionList');
-            
-            if (districts.length === 1) {
-                selectDistrict(districts[0], accountName);
-                closeModal();
-                return;
-            }
-            
-            header.textContent = `Select district in ${districts[0].stateName}:`;
-            list.innerHTML = '';
-            
-            districts.forEach(district => {
-                const div = document.createElement('div');
-                div.className = 'selection-item';
-                div.innerHTML = `
-                    <div class="main-text">${district.districtName}</div>
-                    <div class="sub-text">${district.county} County • ${district.schools.length} schools</div>
-                `;
-                div.onclick = () => {
-                    selectDistrict(district, accountName);
-                    closeModal();
-                };
-                list.appendChild(div);
-            });
-        }
-
-        function selectDistrict(district, accountName) {
-            // Save to memory
-            districtMemory[cleanDistrictName(accountName)] = district.agencyId;
-            localStorage.setItem('districtMemory', JSON.stringify(districtMemory));
-            
-            // Display the data
-            displayNCESData(district);
-        }
-
-        function displayNCESData(district) {
-            const panel = document.getElementById('ncesDataPanel');
-            const display = document.getElementById('ncesDataDisplay');
-            
-            // Calculate statistics
-            let totalStudents = 0;
-            let juiceStudents = 0;
-            let schoolsWithJuice = 0;
-            let elementaryWithJuice = [];
-            let middleSchools = [];
-            let highSchools = [];
-            
-            district.schools.forEach(school => {
-                const total = parseInt(school['Total Students']) || 0;
-                totalStudents += total;
-                
-                // Calculate Juice students (G5-12)
-                let schoolJuiceStudents = 0;
-                for (let grade = 5; grade <= 12; grade++) {
-                    const gradeCol = grade <= 8 ? `G${grade}-Students` : `G${grade}-Students`;
-                    schoolJuiceStudents += parseInt(school[gradeCol]) || 0;
-                }
-                juiceStudents += schoolJuiceStudents;
-                
-                if (schoolJuiceStudents > 0) {
-                    schoolsWithJuice++;
-                    
-                    const schoolInfo = {
-                        name: school['School Name'],
-                        id: school['School ID (12-digit)'],
-                        juiceStudents: schoolJuiceStudents,
-                        totalStudents: total,
-                        level: school['School Level']
-                    };
-                    
-                    if (school['School Level'].includes('Middle')) {
-                        middleSchools.push(schoolInfo);
-                    } else if (school['School Level'].includes('High')) {
-                        highSchools.push(schoolInfo);
-                    } else if (school['School Level'].includes('Elementary') && schoolJuiceStudents > 0) {
-                        elementaryWithJuice.push(schoolInfo);
-                    }
-                }
-            });
-            
-            const juicePercent = totalStudents > 0 ? Math.round((juiceStudents / totalStudents) * 100) : 0;
-            
-            // Determine Title I status
-            let titleIStatus = 'Not Title I';
-            const firstSchool = district.schools[0];
-            if (firstSchool['National School Lunch Program']) {
-                if (firstSchool['National School Lunch Program'].includes('Community Eligibility')) {
-                    titleIStatus = 'High-poverty district (100% eligible)';
-                } else if (firstSchool['National School Lunch Program'].toLowerCase() === 'yes') {
-                    titleIStatus = 'Title I eligible';
-                }
-            }
-            
-            // Build display HTML
-            let html = `
-                <div class="nces-item"><strong>District:</strong> ${district.districtName} (ID: ${district.agencyId})</div>
-                <div class="nces-item"><strong>Location:</strong> ${district.county}, ${district.state}</div>
-                <div class="nces-item"><strong>Total Students:</strong> ${totalStudents.toLocaleString()}</div>
-                <div class="nces-item"><strong>Juice Students (G5-12):</strong> ${juiceStudents.toLocaleString()} (${juicePercent}%)</div>
-                <div class="nces-item"><strong>Schools with Juice Grades:</strong> ${schoolsWithJuice} of ${district.schools.length} total</div>
-                <div class="nces-item" style="padding-left: 40px;">
-                    <a href="javascript:void(0)" onclick="toggleSchoolBreakdown()" style="color: #64b5f6; text-decoration: none;">
-                        <span id="schoolToggle">▶</span> Show school breakdown
-                    </a>
-                </div>
-                <div id="schoolBreakdown" class="school-breakdown">
-            `;
-            
-            if (middleSchools.length > 0) {
-                html += '<div class="school-group"><h5>Middle Schools (' + middleSchools.length + '):</h5>';
-                middleSchools.forEach(school => {
-                    html += `<div class="school-item">• ${school.name} (ID: ${school.id})<br>&nbsp;&nbsp;└─ ${school.juiceStudents} Juice students</div>`;
-                });
-                html += '</div>';
-            }
-            
-            if (elementaryWithJuice.length > 0) {
-                html += '<div class="school-group"><h5>Elementary with G5-6 (' + elementaryWithJuice.length + '):</h5>';
-                elementaryWithJuice.forEach(school => {
-                    html += `<div class="school-item">• ${school.name} (ID: ${school.id})<br>&nbsp;&nbsp;└─ ${school.juiceStudents} Juice students in G5-6 (of ${school.totalStudents} total)</div>`;
-                });
-                html += '</div>';
-            }
-            
-            if (highSchools.length > 0) {
-                html += '<div class="school-group"><h5>High Schools (' + highSchools.length + '):</h5>';
-                highSchools.forEach(school => {
-                    html += `<div class="school-item">• ${school.name} (ID: ${school.id})<br>&nbsp;&nbsp;└─ ${school.juiceStudents} Juice students (G9-12)</div>`;
-                });
-                html += '</div>';
-            }
-            
-            html += '</div>';
-            html += `<div class="nces-item"><strong>Title I:</strong> ${titleIStatus}</div>`;
-            
-            // Add address and website if available
-            if (firstSchool['Street Address']) {
-                html += `<div class="nces-item"><strong>Address:</strong> ${firstSchool['Street Address']}, ${firstSchool['City']}, ${firstSchool['State Abbreviation']} ${firstSchool['Zip Code']}</div>`;
-            }
-            if (firstSchool['Web Site URL']) {
-                const url = firstSchool['Web Site URL'].trim();
-                // Ensure URL has protocol
-                const fullUrl = url.startsWith('http') ? url : `http://${url}`;
-                html += `<div class="nces-item"><strong>Website:</strong> <a href="${fullUrl}" target="_blank" style="color: #64b5f6;">${url}</a></div>`;
-            }
-            
-            display.innerHTML = html;
-            panel.style.display = 'block';
-            
-            // Store current matches for context generation
-            currentNCESMatches = district;
-        }
-
-        function toggleNCESPanel() {
-            const toggle = document.getElementById('ncesToggle');
-            const content = document.getElementById('ncesContent');
-            
-            if (content.classList.contains('show')) {
-                content.classList.remove('show');
-                toggle.classList.remove('expanded');
-            } else {
-                content.classList.add('show');
-                toggle.classList.add('expanded');
-            }
-        }
-
-        function toggleSchoolBreakdown() {
-            const breakdown = document.getElementById('schoolBreakdown');
-            const toggle = document.getElementById('schoolToggle');
-            
-            if (breakdown.classList.contains('show')) {
-                breakdown.classList.remove('show');
-                toggle.textContent = '▶';
-            } else {
-                breakdown.classList.add('show');
-                toggle.textContent = '▼';
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('districtModal').classList.remove('show');
         }
     </script>
 </body>
