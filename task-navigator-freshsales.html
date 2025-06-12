@@ -1,0 +1,4104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Navigator for FreshSales</title>
+    <style>
+        /* FreshSales-inspired design language */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fb;
+            color: #192735;
+            line-height: 1.5;
+        }
+        
+        /* Orange accent color from FreshSales: #ff6900 */
+        :root {
+            --primary-orange: #ff6900;
+            --primary-hover: #e55a00;
+            --primary-light: #fff4ed;
+            --border-color: #e0e6ed;
+            --text-primary: #192735;
+            --text-secondary: #6a7c8e;
+            --bg-white: #ffffff;
+            --bg-gray: #f7f9fb;
+            --success-green: #00b74f;
+            --error-red: #dc3545;
+            --warning-yellow: #ffc107;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background-color: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 0;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-orange);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Onboarding/Setup Screen */
+        .setup-screen {
+            max-width: 600px;
+            margin: 60px auto;
+            background-color: var(--bg-white);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        
+        .setup-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .setup-header h1 {
+            color: var(--text-primary);
+            font-size: 28px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .setup-header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .benefits-list {
+            background-color: var(--primary-light);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 32px;
+            border: 1px solid #ffe4d1;
+        }
+        
+        .benefits-list h3 {
+            color: var(--primary-orange);
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .benefit-item::before {
+            content: "✓";
+            color: var(--success-green);
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-white);
+            color: var(--text-primary);
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255, 105, 0, 0.1);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-orange);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #e0e6ed;
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d0d6dd;
+        }
+        
+        .btn-success {
+            background-color: var(--success-green);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #00a143;
+        }
+        
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Field Preferences */
+        .field-preferences {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .field-preferences h3 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-size: 18px;
+        }
+        
+        .field-group {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .field-group h4 {
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .field-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .field-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .field-checkbox label {
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        /* Main Dashboard */
+        .main-content {
+            display: none;
+        }
+        
+        .dashboard-header {
+            background-color: var(--bg-white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+        
+        .dashboard-header h1 {
+            color: var(--text-primary);
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .dashboard-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary-orange);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .task-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-white);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-orange);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+        
+        .task-list {
+            background-color: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        .task-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        
+        .task-item:hover {
+            background-color: var(--bg-gray);
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-right: 16px;
+        }
+        
+        .task-details {
+            flex-grow: 1;
+        }
+        
+        .task-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+        
+        .task-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .task-contact {
+            color: var(--primary-orange);
+            font-weight: 500;
+        }
+        
+        .task-due {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .overdue {
+            color: var(--error-red);
+            font-weight: 500;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-white);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background-color: var(--bg-white);
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.open {
+            right: 0;
+        }
+        
+        .settings-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .settings-content {
+            padding: 20px;
+        }
+        
+        .settings-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--text-secondary);
+        }
+        
+        .settings-close:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Floating Settings Button */
+        .settings-trigger {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--primary-orange);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .settings-trigger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(255, 105, 0, 0.4);
+        }
+        
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-orange);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Status Messages */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* Quick Add Task */
+        .quick-add-section {
+            background-color: var(--bg-white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+        
+        .quick-add-form {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .quick-add-form .form-group {
+            margin-bottom: 0;
+            flex: 1;
+        }
+        
+        /* Context Builder */
+        .context-builder {
+            background-color: var(--primary-light);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
+            border: 1px solid #ffe4d1;
+        }
+        
+        .context-builder h3 {
+            color: var(--primary-orange);
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        
+        .context-preview {
+            background-color: var(--bg-white);
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        
+        /* Contact Search Results */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .search-results.show {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        .search-result-item:hover {
+            background-color: var(--bg-gray);
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        
+        .search-result-details {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .search-loading {
+            padding: 12px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .search-no-results {
+            padding: 12px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        /* Task Explorer Modal */
+        .task-explorer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 2000;
+            overflow-y: auto;
+        }
+        
+        .task-explorer-modal.show {
+            display: block;
+        }
+        
+        .task-explorer-content {
+            background-color: var(--bg-white);
+            margin: 20px auto;
+            max-width: 900px;
+            width: 95%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .task-explorer-header {
+            background-color: var(--primary-orange);
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-explorer-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .task-explorer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .task-explorer-close:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .task-explorer-body {
+            display: flex;
+            padding: 0;
+            height: calc(100vh - 120px);
+            overflow: hidden;
+        }
+        
+        .task-explorer-nav {
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+        
+        .nav-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-item:hover {
+            background-color: #e8e9ea;
+        }
+        
+        .nav-item.active {
+            background-color: #fff;
+            border-left: 3px solid var(--primary-orange);
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+        }
+        
+        .nav-text {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        
+        .task-explorer-content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        .explorer-section {
+            margin-bottom: 32px;
+        }
+        
+        .explorer-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .explorer-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-orange);
+        }
+        
+        .task-notes {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-orange);
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .field-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .field-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .field-value {
+            color: var(--text-primary);
+            font-size: 15px;
+            word-break: break-word;
+        }
+        
+        .field-value.empty {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .other-fields-toggle {
+            background-color: var(--bg-gray);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .other-fields-toggle:hover {
+            background-color: #e8ecf0;
+        }
+        
+        .other-fields-toggle.expanded {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .other-fields-content {
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            padding: 16px;
+            display: none;
+        }
+        
+        .other-fields-content.show {
+            display: block;
+        }
+        
+        .field-checkbox-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .field-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .field-checkbox-item input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .context-item {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .context-item-header {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .context-item-content {
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .context-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .loading-context {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        
+        .context-subsection {
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .context-subsection-title {
+            background-color: var(--primary-orange);
+            color: white;
+            padding: 12px 16px;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        
+        .context-subsection-title:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .section-toggle {
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .section-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+        
+        .context-content {
+            padding: 16px;
+            background-color: var(--bg-white);
+        }
+        
+        .email-item, .task-item-detail {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .email-item:last-child, .task-item-detail:last-child {
+            margin-bottom: 0;
+        }
+        
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .email-subject {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        
+        .email-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        
+        .email-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .email-body {
+            color: var(--text-primary);
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .no-data {
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Contact Confirmation Modal */
+        .contact-confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .contact-confirm-modal.show {
+            display: flex;
+        }
+        
+        .contact-confirm-content {
+            background-color: var(--bg-white);
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .contact-confirm-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .contact-details {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .contact-detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .contact-detail-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .contact-detail-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            width: 100px;
+            flex-shrink: 0;
+        }
+        
+        .contact-detail-value {
+            color: var(--text-primary);
+        }
+        
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Email Composer Styles */
+        .email-composer {
+            background-color: var(--bg-gray);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .email-composer h4 {
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .email-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .email-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .email-field label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .email-field input,
+        .email-field textarea {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background-color: var(--bg-white);
+            color: var(--text-primary);
+        }
+        
+        .email-field input:focus,
+        .email-field textarea:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 2px rgba(255, 119, 0, 0.1);
+        }
+        
+        .email-field textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+        
+        .email-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        /* Task Actions Styles */
+        .task-actions-section {
+            background-color: var(--bg-gray);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .task-actions-section h4 {
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .task-action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Collapsible Section Styles */
+        .explorer-section-title.collapsible {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            padding: 12px 0;
+            border-bottom: 2px solid var(--primary-orange);
+        }
+        
+        .explorer-section-title.collapsible:hover {
+            color: var(--primary-hover);
+        }
+        
+        .section-content {
+            padding-top: 16px;
+        }
+        
+        .section-content.collapsed {
+            display: none;
+        }
+
+        /* Task Overview Specific Styles */
+        .task-description {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .other-contacts {
+            background-color: var(--bg-gray);
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .other-contacts h5 {
+            margin: 0 0 12px 0;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Email Status Messages */
+        .email-status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .email-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .email-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .email-status.sending {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .dashboard-stats {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .task-filters {
+                flex-wrap: wrap;
+            }
+            
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .task-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">TN</div>
+                <div class="logo-text">Task Navigator for FreshSales</div>
+            </div>
+            <button id="logoutBtn" class="btn btn-secondary" style="display: none;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Setup/Onboarding Screen -->
+    <div id="setupScreen" class="setup-screen">
+        <div class="setup-header">
+            <h1>Welcome to Task Navigator</h1>
+            <p>Supercharge your FreshSales workflow with intelligent task management</p>
+        </div>
+
+        <div class="benefits-list">
+            <h3>What Task Navigator Does:</h3>
+            <div class="benefit-item">View all open, due, overdue, and completed tasks at once</div>
+            <div class="benefit-item">Instantly mark tasks complete and create follow-ups</div>
+            <div class="benefit-item">Access complete contact history and interactions</div>
+            <div class="benefit-item">Generate AI-ready context for personalized outreach</div>
+            <div class="benefit-item">Customize fields to match your workflow</div>
+        </div>
+
+        <form id="setupForm">
+            <div class="form-group">
+                <label for="apiKey">FreshSales API Key *</label>
+                <input type="password" id="apiKey" placeholder="Enter your FreshSales API key" required>
+                <small style="color: var(--text-secondary); display: block; margin-top: 4px;">
+                    Find this in FreshSales: Settings → API Settings
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="domain">Your FreshSales Domain *</label>
+                <input type="text" id="domain" placeholder="yourcompany.myfreshworks.com" required>
+            </div>
+
+            <div class="field-preferences">
+                <h3>Customize Your Dashboard</h3>
+                
+                <div class="field-group">
+                    <h4>Contact Information to Display</h4>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="showPhone" checked>
+                        <label for="showPhone">Phone Number</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="showJobTitle" checked>
+                        <label for="showJobTitle">Job Title</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="showCompany" checked>
+                        <label for="showCompany">Company/Account</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="showAddress" checked>
+                        <label for="showAddress">Address</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="showCustomFields">
+                        <label for="showCustomFields">Custom Fields</label>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <h4>Context Generation Options</h4>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="includeNotes" checked>
+                        <label for="includeNotes">Include Contact Notes</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="includeEmails" checked>
+                        <label for="includeEmails">Include Email History</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="includeTasks" checked>
+                        <label for="includeTasks">Include Task History</label>
+                    </div>
+                    <div class="field-checkbox">
+                        <input type="checkbox" id="includeDeals">
+                        <label for="includeDeals">Include Deal Information</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+                Get Started →
+            </button>
+        </form>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainContent" class="main-content">
+        <div class="container">
+            <!-- Dashboard Header with Stats -->
+            <div class="dashboard-header">
+                <h1>Your Task Dashboard</h1>
+                <div class="dashboard-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="openTasksCount">0</div>
+                        <div class="stat-label">Open Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="dueTodayCount">0</div>
+                        <div class="stat-label">Due Today</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="overdueCount">0</div>
+                        <div class="stat-label">Overdue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage"></div>
+
+            <!-- Quick Add Task -->
+            <div class="quick-add-section">
+                <h3 style="margin-bottom: 16px; font-size: 18px;">Quick Add Task</h3>
+                <form class="quick-add-form" id="quickAddForm">
+                    <div class="form-group">
+                        <label for="quickTaskTitle">Task Title</label>
+                        <input type="text" id="quickTaskTitle" placeholder="Follow up with contact">
+                    </div>
+                    <div class="form-group">
+                        <label for="quickTaskContact">Contact</label>
+                        <div style="position: relative;">
+                            <input type="text" id="quickTaskContact" placeholder="Search contacts..." autocomplete="off">
+                            <input type="hidden" id="selectedContactId">
+                            <div id="contactSearchResults" class="search-results"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quickTaskDue">Due Date</label>
+                        <input type="datetime-local" id="quickTaskDue">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </form>
+            </div>
+
+            <!-- Task Filters -->
+            <div class="task-filters">
+                <button class="filter-btn active" onclick="filterTasks('open')">Open Tasks</button>
+                <button class="filter-btn" onclick="filterTasks('due_today')">Due Today</button>
+                <button class="filter-btn" onclick="filterTasks('overdue')">Overdue</button>
+                <button class="filter-btn" onclick="filterTasks('completed')">Completed</button>
+                <button class="filter-btn" onclick="filterTasks('all')">All Tasks</button>
+            </div>
+
+            <!-- Task List -->
+            <div id="taskList" class="task-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading your tasks...</p>
+                </div>
+            </div>
+
+            <!-- Context Builder (shown when task is selected) -->
+            <div id="contextBuilder" class="context-builder" style="display: none;">
+                <h3>AI Context Generator</h3>
+                <p style="margin-bottom: 16px; color: var(--text-secondary);">
+                    Copy this context to your favorite AI assistant for personalized email drafts
+                </p>
+                <div class="context-preview" id="contextPreview">
+                    Loading context...
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-primary" onclick="copyContext()">
+                        Copy to Clipboard
+                    </button>
+                    <button class="btn btn-secondary" onclick="regenerateContext()">
+                        Regenerate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settingsPanel" class="settings-panel">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="settings-close" onclick="closeSettings()">×</button>
+        </div>
+        <div class="settings-content">
+            <h3>Display Preferences</h3>
+            <p>Customize which fields appear in your dashboard</p>
+            <!-- Settings form would go here -->
+        </div>
+    </div>
+
+    <!-- Floating Settings Button -->
+    <button class="settings-trigger" onclick="openSettings()" style="display: none;" id="settingsBtn">
+        ⚙️
+    </button>
+
+    <!-- Task Explorer Modal -->
+    <div id="taskExplorerModal" class="task-explorer-modal">
+        <div class="task-explorer-content">
+            <div class="task-explorer-header">
+                <h2 class="task-explorer-title" id="explorerTaskTitle">Task Details</h2>
+                <button class="task-explorer-close" onclick="closeTaskExplorer()">×</button>
+            </div>
+            <div class="task-explorer-body">
+                <!-- Vertical Navigation -->
+                <div class="task-explorer-nav">
+                    <ul class="nav-items">
+                        <li class="nav-item active" onclick="navigateToSection('taskOverviewSection')">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-text">Task Overview</span>
+                        </li>
+                        <li class="nav-item" onclick="navigateToSection('contactDetailsSection')">
+                            <span class="nav-icon">👤</span>
+                            <span class="nav-text">Contact Details</span>
+                        </li>
+                        <li class="nav-item" onclick="navigateToSection('nextStepsSection')">
+                            <span class="nav-icon">📨</span>
+                            <span class="nav-text">Next Steps</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Content Area -->
+                <div class="task-explorer-content-area">
+                <!-- Task Overview Section -->
+                <div class="explorer-section" id="taskOverviewSection">
+                    <h3 class="explorer-section-title">Task Overview</h3>
+                    
+                    <div class="field-grid">
+                        <div class="field-item">
+                            <div class="field-label">Task Title</div>
+                            <div class="field-value" id="explorerTaskName">Loading...</div>
+                        </div>
+                        <div class="field-item">
+                            <div class="field-label">Due Date</div>
+                            <div class="field-value" id="explorerTaskDueDate">Loading...</div>
+                        </div>
+                        <div class="field-item">
+                            <div class="field-label">Status</div>
+                            <div class="field-value" id="explorerTaskStatus">Loading...</div>
+                        </div>
+                        <div class="field-item">
+                            <div class="field-label">Priority</div>
+                            <div class="field-value" id="explorerTaskPriority">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <div id="explorerTaskDescription" class="task-description" style="display: none;">
+                        <!-- Task description will be populated here -->
+                    </div>
+                    
+                    <div id="explorerOtherContacts" class="other-contacts" style="display: none;">
+                        <!-- Other contacts associated with task will be shown here -->
+                    </div>
+                </div>
+                
+                <!-- Contact Details Section (Collapsible) -->
+                <div class="explorer-section" id="contactDetailsSection">
+                    <h3 class="explorer-section-title collapsible" onclick="toggleSection('contactDetailsContent')">
+                        Contact Details
+                        <span class="section-toggle" id="contactDetailsToggle">▶</span>
+                    </h3>
+                    <div id="contactDetailsContent" class="section-content" style="display: none;">
+                        <div class="field-grid">
+                            <div class="field-item">
+                                <div class="field-label">Contact Name</div>
+                                <div class="field-value" id="explorerContactName">Loading...</div>
+                            </div>
+                            <div class="field-item">
+                                <div class="field-label">Email Address</div>
+                                <div class="field-value" id="explorerContactEmail">Loading...</div>
+                            </div>
+                            <div class="field-item">
+                                <div class="field-label">Phone Number</div>
+                                <div class="field-value" id="explorerContactPhone">Loading...</div>
+                            </div>
+                            <div class="field-item">
+                                <div class="field-label">Account Name</div>
+                                <div class="field-value" id="explorerAccountName">Loading...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="field-grid" id="customFieldsGrid" style="display: none;">
+                            <!-- Auto-populated contact fields will be shown here -->
+                        </div>
+                        
+                        <!-- Context & History Subsections -->
+                        <div class="context-subsections">
+                            <!-- Contact Notes -->
+                            <div class="context-subsection">
+                                <h4 class="context-subsection-title" onclick="toggleSection('explorerContactNotes')">
+                                    Contact Notes
+                                    <span class="section-toggle">▶</span>
+                                </h4>
+                                <div id="explorerContactNotes" class="context-content" style="display: none;">
+                                    <div class="loading-context">Loading contact notes...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Previous Emails -->
+                            <div class="context-subsection">
+                                <h4 class="context-subsection-title" onclick="toggleSection('explorerEmails')">
+                                    Previous Emails
+                                    <span class="section-toggle">▶</span>
+                                </h4>
+                                <div id="explorerEmails" class="context-content" style="display: none;">
+                                    <div class="loading-context">Loading email history...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Task History -->
+                            <div class="context-subsection">
+                                <h4 class="context-subsection-title" onclick="toggleSection('explorerTasks')">
+                                    Task History
+                                    <span class="section-toggle">▶</span>
+                                </h4>
+                                <div id="explorerTasks" class="context-content" style="display: none;">
+                                    <div class="loading-context">Loading task history...</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Timeline Overview -->
+                            <div class="context-subsection">
+                                <h4 class="context-subsection-title" onclick="toggleSection('explorerTimeline')">
+                                    Recent Activity Timeline
+                                    <span class="section-toggle">▶</span>
+                                </h4>
+                                <div id="explorerTimeline" class="context-content" style="display: none;">
+                                    <div class="loading-context">Loading activity timeline...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Next Steps Section -->
+                <div class="explorer-section" id="nextStepsSection">
+                    <h3 class="explorer-section-title collapsible" onclick="toggleSection('nextStepsContent')">
+                        Next Steps
+                        <span class="section-toggle" id="nextStepsToggle">▶</span>
+                    </h3>
+                    <div id="nextStepsContent" class="section-content" style="display: none;">
+                    
+                    <!-- Email Composer -->
+                    <div class="email-composer">
+                        <h4>Send Email</h4>
+                        <div class="email-form">
+                            <div class="email-field">
+                                <label>To:</label>
+                                <input type="email" id="emailTo" readonly>
+                            </div>
+                            <div class="email-field">
+                                <label>CC:</label>
+                                <input type="email" id="emailCC" placeholder="Optional additional recipients...">
+                            </div>
+                            <div class="email-field">
+                                <label>Subject:</label>
+                                <input type="text" id="emailSubject" placeholder="Enter email subject...">
+                            </div>
+                            <div class="email-field">
+                                <label>Message:</label>
+                                <textarea id="emailBody" rows="10" placeholder="Compose your email..."></textarea>
+                            </div>
+                            <div class="email-actions">
+                                <button class="btn btn-primary" onclick="sendEmail()" id="sendEmailBtn">Send Email</button>
+                                <button class="btn btn-secondary" onclick="loadEmailSignature()">Load My Signature</button>
+                                <button class="btn btn-secondary" onclick="generateAIContext()">Generate AI Context</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Task Actions -->
+                    <div class="task-actions-section">
+                        <h4>Task Actions</h4>
+                        <div class="task-action-buttons">
+                            <button class="btn btn-success" onclick="markTaskComplete()">Mark Current Task as Complete</button>
+                            <button class="btn btn-primary" onclick="completeAndCreateNew()">Complete Task & Create New Task</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Confirmation Modal -->
+    <div id="contactConfirmModal" class="contact-confirm-modal">
+        <div class="contact-confirm-content">
+            <div class="contact-confirm-header">Confirm Contact</div>
+            <div id="contactDetailsDisplay" class="contact-details">
+                <!-- Contact details will be populated here -->
+            </div>
+            <div class="confirm-actions">
+                <button class="btn btn-secondary" onclick="cancelContactSelection()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmContactSelection()">Confirm Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let API_KEY = '';
+        let BASE_URL = '';
+        let userPreferences = {
+            showPhone: true,
+            showJobTitle: true,
+            showCompany: true,
+            showAddress: true,
+            showCustomFields: false,
+            includeNotes: true,
+            includeEmails: true,
+            includeTasks: true,
+            includeDeals: false
+        };
+        let currentFilter = 'open';
+        let allTasks = [];
+        let contacts = {};
+        let accounts = {};
+        let selectedContactForTask = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkStoredCredentials();
+            setupEventListeners();
+            setDefaultDueDate();
+        });
+
+        function checkStoredCredentials() {
+            const storedKey = localStorage.getItem('tn_api_key');
+            const storedDomain = localStorage.getItem('tn_domain');
+            const storedPrefs = localStorage.getItem('tn_preferences');
+            
+            if (storedKey && storedDomain) {
+                API_KEY = storedKey;
+                // Clean stored domain - remove any protocol
+                const cleanDomain = storedDomain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                BASE_URL = `${cleanDomain}/crm/sales`;
+                
+                if (storedPrefs) {
+                    userPreferences = JSON.parse(storedPrefs);
+                }
+                
+                showDashboard();
+                loadDashboardData();
+                getCurrentUserId(); // Get current user ID for task assignment
+            } else {
+                showSetup();
+            }
+        }
+
+        // Get current user ID for task assignment - using proven working approach
+        async function getCurrentUserId() {
+            // Don't overcomplicate - extract from task data like the working dashboard
+            if (allTasks && allTasks.length > 0) {
+                const taskWithOwner = allTasks.find(task => task.owner_id);
+                if (taskWithOwner) {
+                    window.currentUserId = taskWithOwner.owner_id;
+                    console.log('User ID extracted from existing task:', window.currentUserId);
+                    return;
+                }
+            }
+            
+            // If no tasks yet, extract from contacts
+            const contactsWithOwner = Object.values(contacts).find(contact => contact.owner_id);
+            if (contactsWithOwner) {
+                window.currentUserId = contactsWithOwner.owner_id;
+                console.log('User ID extracted from contact owner:', window.currentUserId);
+                return;
+            }
+            
+            console.log('No user ID found - will use contact owner when creating tasks');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('setupForm').addEventListener('submit', handleSetup);
+            document.getElementById('quickAddForm').addEventListener('submit', handleQuickAdd);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Contact search
+            const contactInput = document.getElementById('quickTaskContact');
+            contactInput.addEventListener('input', handleContactSearch);
+            contactInput.addEventListener('focus', handleContactSearch);
+            contactInput.addEventListener('blur', hideContactResults);
+            
+            // Preference checkboxes
+            const checkboxes = document.querySelectorAll('.field-checkbox input');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updatePreferences);
+            });
+        }
+
+        function setDefaultDueDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0);
+            document.getElementById('quickTaskDue').value = tomorrow.toISOString().slice(0, 16);
+        }
+
+        function showSetup() {
+            document.getElementById('setupScreen').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('settingsBtn').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'inline-flex';
+            document.getElementById('settingsBtn').style.display = 'flex';
+        }
+
+        async function handleSetup(e) {
+            e.preventDefault();
+            
+            const apiKey = document.getElementById('apiKey').value.trim();
+            let domain = document.getElementById('domain').value.trim();
+            
+            if (!apiKey || !domain) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Clean domain - remove any protocol and trailing slashes
+            domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            
+            // Test the credentials
+            showMessage('Verifying your credentials...', 'info');
+            
+            try {
+                API_KEY = apiKey;
+                BASE_URL = `${domain}/crm/sales`;
+                
+                // Test API call
+                const testUrl = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks?per_page=1`;
+                const response = await fetch(testUrl, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Save credentials
+                    localStorage.setItem('tn_api_key', apiKey);
+                    localStorage.setItem('tn_domain', domain);
+                    localStorage.setItem('tn_preferences', JSON.stringify(userPreferences));
+                    
+                    showMessage('Connected successfully!', 'success');
+                    showDashboard();
+                    loadDashboardData();
+                } else {
+                    throw new Error('Invalid credentials');
+                }
+            } catch (error) {
+                showMessage('Failed to connect. Please check your API key and domain.', 'error');
+                API_KEY = '';
+                BASE_URL = '';
+            }
+        }
+
+        function updatePreferences() {
+            const checkboxes = document.querySelectorAll('.field-checkbox input');
+            checkboxes.forEach(cb => {
+                userPreferences[cb.id] = cb.checked;
+            });
+            
+            localStorage.setItem('tn_preferences', JSON.stringify(userPreferences));
+        }
+
+        async function loadDashboardData() {
+            try {
+                await loadTasks();
+                updateDashboardStats();
+                
+                // Extract contacts from task data instead of API call
+                extractContactsFromTasks();
+            } catch (error) {
+                showMessage('Error loading dashboard data', 'error');
+                console.error(error);
+            }
+        }
+        
+        // Extract contacts from loaded task data
+        function extractContactsFromTasks() {
+            console.log('Extracting contacts from tasks...');
+            let contactCount = Object.keys(contacts).length;
+            
+            // Also check if we have accounts with contacts
+            Object.values(accounts).forEach(account => {
+                if (account.contacts) {
+                    account.contacts.forEach(contact => {
+                        if (!contacts[contact.id]) {
+                            contacts[contact.id] = contact;
+                            contactCount++;
+                        }
+                    });
+                }
+            });
+            
+            console.log(`Total contacts available for search: ${contactCount}`);
+        }
+
+        async function loadTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading tasks...</p></div>';
+            
+            try {
+                // Load tasks from multiple filters to get more contacts
+                const taskFilters = ['open', 'completed', 'due_today', 'overdue'];
+                allTasks = [];
+                
+                for (const filter of taskFilters) {
+                    try {
+                        const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks?filter=${filter}&include=targetable&per_page=100`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': `Token token=${API_KEY}`,
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const tasks = data.tasks || [];
+                            
+                            // Add tasks (avoiding duplicates)
+                            tasks.forEach(task => {
+                                if (!allTasks.find(t => t.id === task.id)) {
+                                    allTasks.push(task);
+                                }
+                            });
+                            
+                            // Store contacts and accounts from the response
+                            if (data.contacts) {
+                                data.contacts.forEach(c => contacts[c.id] = c);
+                            }
+                            if (data.sales_accounts) {
+                                data.sales_accounts.forEach(a => accounts[a.id] = a);
+                            }
+                            
+                            console.log(`Loaded ${tasks.length} tasks from ${filter} filter, total contacts now: ${Object.keys(contacts).length}`);
+                        }
+                    } catch (filterError) {
+                        console.error(`Error loading ${filter} tasks:`, filterError);
+                    }
+                }
+                
+                console.log(`Total tasks loaded: ${allTasks.length}, Total contacts available for search: ${Object.keys(contacts).length}`);
+                
+                filterTasks(currentFilter);
+                updateContactDropdown();
+                
+                // Now that we have task and contact data, get user ID using proven approach
+                getCurrentUserId();
+                
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                taskList.innerHTML = '<div class="loading">Error loading tasks. Please check your connection.</div>';
+            }
+        }
+
+
+        function updateContactDropdown() {
+            const select = document.getElementById('quickTaskContact');
+            select.innerHTML = '<option value="">Select a contact...</option>';
+            
+            Object.values(contacts).forEach(contact => {
+                const option = document.createElement('option');
+                option.value = contact.id;
+                option.textContent = contact.display_name || contact.email || 'Unknown Contact';
+                select.appendChild(option);
+            });
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(filter.replace('_', ' '))) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            
+            let filteredTasks = allTasks;
+            
+            switch(filter) {
+                case 'open':
+                    filteredTasks = allTasks.filter(t => t.status === 0);
+                    break;
+                case 'due_today':
+                    filteredTasks = allTasks.filter(t => {
+                        const due = new Date(t.due_date);
+                        return t.status === 0 && due >= todayStart && due < todayEnd;
+                    });
+                    break;
+                case 'overdue':
+                    filteredTasks = allTasks.filter(t => {
+                        const due = new Date(t.due_date);
+                        return t.status === 0 && due < now;
+                    });
+                    break;
+                case 'completed':
+                    filteredTasks = allTasks.filter(t => t.status === 1);
+                    break;
+            }
+            
+            displayTasks(filteredTasks);
+            updateDashboardStats();
+        }
+
+        function displayTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<div class="loading">No tasks found</div>';
+                return;
+            }
+            
+            taskList.innerHTML = tasks.map(task => createTaskHTML(task)).join('');
+        }
+
+        function createTaskHTML(task) {
+            const contact = task.targetable ? 
+                (task.targetable.type === 'contact' ? contacts[task.targetable.id] : null) : null;
+            const account = task.targetable ? 
+                (task.targetable.type === 'sales_account' ? accounts[task.targetable.id] : null) : null;
+            
+            const targetName = contact?.display_name || account?.name || 'Unknown';
+            const targetEmail = contact?.email || '';
+            
+            const dueDate = new Date(task.due_date);
+            const isOverdue = dueDate < new Date() && task.status === 0;
+            const dueDateStr = dueDate.toLocaleDateString() + ' ' + 
+                             dueDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            
+            return `
+                <div class="task-item" onclick="selectTask(${task.id})">
+                    <input type="checkbox" class="task-checkbox" 
+                           ${task.status === 1 ? 'checked' : ''} 
+                           onclick="toggleTask(event, ${task.id})">
+                    <div class="task-details">
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        <div class="task-meta">
+                            <span class="task-contact">${escapeHtml(targetName)}</span>
+                            ${targetEmail ? `<span>•</span> <span>${escapeHtml(targetEmail)}</span>` : ''}
+                            <span>•</span>
+                            <span class="task-due ${isOverdue ? 'overdue' : ''}">
+                                📅 ${dueDateStr}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn" onclick="exploreTask(event, ${task.id})">
+                            Explore Task
+                        </button>
+                        ${targetEmail ? `
+                            <button class="action-btn" onclick="composeEmail(event, '${escapeHtml(targetEmail)}')">
+                                📧 Email
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateDashboardStats() {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            
+            const openTasks = allTasks.filter(t => t.status === 0);
+            const dueTodayTasks = openTasks.filter(t => {
+                const due = new Date(t.due_date);
+                return due >= todayStart && due < todayEnd;
+            });
+            const overdueTasks = openTasks.filter(t => {
+                const due = new Date(t.due_date);
+                return due < now;
+            });
+            
+            document.getElementById('openTasksCount').textContent = openTasks.length;
+            document.getElementById('dueTodayCount').textContent = dueTodayTasks.length;
+            document.getElementById('overdueCount').textContent = overdueTasks.length;
+        }
+
+        async function toggleTask(event, taskId) {
+            event.stopPropagation();
+            const checkbox = event.target;
+            const newStatus = checkbox.checked ? 1 : 0;
+            
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks/${taskId}`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        task: { status: newStatus }
+                    })
+                });
+                
+                if (response.ok) {
+                    // Update local task
+                    const task = allTasks.find(t => t.id === taskId);
+                    if (task) task.status = newStatus;
+                    
+                    showMessage(newStatus === 1 ? 'Task completed!' : 'Task reopened', 'success');
+                    filterTasks(currentFilter);
+                } else {
+                    throw new Error('Failed to update task');
+                }
+            } catch (error) {
+                checkbox.checked = !checkbox.checked;
+                showMessage('Error updating task', 'error');
+            }
+        }
+
+        function selectTask(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            document.getElementById('contextBuilder').style.display = 'block';
+            generateContext(task);
+        }
+
+        async function generateContext(task) {
+            const preview = document.getElementById('contextPreview');
+            preview.textContent = 'Generating context...';
+            
+            // Get related contact/account
+            let target = null;
+            if (task.targetable) {
+                if (task.targetable.type === 'contact') {
+                    target = contacts[task.targetable.id];
+                } else if (task.targetable.type === 'sales_account') {
+                    target = accounts[task.targetable.id];
+                }
+            }
+            
+            let context = `TASK CONTEXT FOR AI ASSISTANT\n\n`;
+            context += `Current Task: ${task.title}\n`;
+            context += `Due: ${new Date(task.due_date).toLocaleString()}\n`;
+            if (task.description) {
+                context += `Description: ${task.description}\n`;
+            }
+            context += `\n`;
+            
+            if (target) {
+                if (task.targetable.type === 'contact') {
+                    context += `CONTACT INFORMATION\n`;
+                    context += `Name: ${target.display_name || 'N/A'}\n`;
+                    context += `Email: ${target.email || 'N/A'}\n`;
+                    if (userPreferences.showPhone && target.phone) {
+                        context += `Phone: ${target.phone}\n`;
+                    }
+                    if (userPreferences.showJobTitle && target.job_title) {
+                        context += `Title: ${target.job_title}\n`;
+                    }
+                    if (userPreferences.showCompany && target.company_name) {
+                        context += `Company: ${target.company_name}\n`;
+                    }
+                } else {
+                    context += `ACCOUNT INFORMATION\n`;
+                    context += `Name: ${target.name}\n`;
+                    if (target.website) context += `Website: ${target.website}\n`;
+                    if (target.industry) context += `Industry: ${target.industry}\n`;
+                }
+            }
+            
+            context += `\n`;
+            context += `INSTRUCTIONS:\n`;
+            context += `Please help me draft a professional follow-up email based on the above context.\n`;
+            context += `Keep the tone friendly yet professional, and focus on moving the conversation forward.\n`;
+            
+            preview.textContent = context;
+        }
+
+        function copyContext() {
+            const context = document.getElementById('contextPreview').textContent;
+            navigator.clipboard.writeText(context).then(() => {
+                showMessage('Context copied to clipboard!', 'success');
+            });
+        }
+
+        function regenerateContext() {
+            const selectedTask = document.querySelector('.task-item.selected');
+            if (selectedTask) {
+                const taskId = parseInt(selectedTask.dataset.taskId);
+                const task = allTasks.find(t => t.id === taskId);
+                if (task) generateContext(task);
+            }
+        }
+
+        async function handleQuickAdd(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('quickTaskTitle').value.trim();
+            const contactId = document.getElementById('selectedContactId').value;
+            const dueDate = document.getElementById('quickTaskDue').value;
+            
+            if (!title) {
+                showMessage('Please enter a task title', 'error');
+                return;
+            }
+            
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks`;
+                const taskData = {
+                    task: {
+                        title: title,
+                        due_date: new Date(dueDate).toISOString(),
+                        status: 0
+                    }
+                };
+                
+                if (contactId) {
+                    taskData.task.targetable_type = 'Contact';
+                    taskData.task.targetable_id = parseInt(contactId);
+                    
+                    // CRITICAL: Always assign task to contact's owner (you)
+                    const contact = contacts[contactId];
+                    if (contact && contact.owner_id) {
+                        taskData.task.owner_id = contact.owner_id;
+                        console.log('Assigning task to contact owner:', contact.owner_id);
+                    } else {
+                        console.log('Contact has no explicit owner_id, assigning task to current user:', window.currentUserId);
+                        // Try to get current user ID as fallback
+                        taskData.task.owner_id = window.currentUserId || null;
+                    }
+                } else {
+                    // If no contact, still assign to current user
+                    taskData.task.owner_id = window.currentUserId || null;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                
+                if (response.ok) {
+                    showMessage('Task created successfully!', 'success');
+                    document.getElementById('quickAddForm').reset();
+                    document.getElementById('selectedContactId').value = '';
+                    setDefaultDueDate();
+                    hideContactResults();
+                    loadTasks();
+                } else {
+                    throw new Error('Failed to create task');
+                }
+            } catch (error) {
+                showMessage('Error creating task', 'error');
+            }
+        }
+
+        async function exploreTask(event, taskId) {
+            event.stopPropagation();
+            
+            const task = allTasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            // Show the modal
+            document.getElementById('taskExplorerModal').classList.add('show');
+            
+            // Store current task for later operations
+            window.currentTask = task;
+            
+            // Populate Task Overview section
+            document.getElementById('explorerTaskTitle').textContent = task.title;
+            populateTaskOverview(task);
+            
+            // Initialize email form
+            initializeEmailForm(task);
+            
+            // Load contact and account information
+            await loadTaskDetails(task);
+            
+            // Load context and history
+            await loadTaskContext(task);
+        }
+        
+        function populateTaskOverview(task) {
+            // Populate task details
+            document.getElementById('explorerTaskName').textContent = task.title || 'Untitled Task';
+            
+            // Format due date
+            if (task.due_date) {
+                const dueDate = new Date(task.due_date);
+                const isOverdue = dueDate < new Date() && task.status !== 1;
+                const dateStr = dueDate.toLocaleDateString() + ' at ' + dueDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                document.getElementById('explorerTaskDueDate').innerHTML = isOverdue ? 
+                    `<span style="color: #d32f2f; font-weight: 600;">${dateStr} (Overdue)</span>` : 
+                    dateStr;
+            } else {
+                document.getElementById('explorerTaskDueDate').textContent = 'No due date set';
+            }
+            
+            // Status
+            const statusText = task.status === 1 ? 'Completed' : 'Open';
+            const statusColor = task.status === 1 ? '#4caf50' : '#f57c00';
+            document.getElementById('explorerTaskStatus').innerHTML = `<span style="color: ${statusColor}; font-weight: 600;">${statusText}</span>`;
+            
+            // Priority (if available)
+            const priority = task.priority || 'Normal';
+            document.getElementById('explorerTaskPriority').textContent = priority;
+            
+            // Show description if exists
+            const descDiv = document.getElementById('explorerTaskDescription');
+            if (task.description && task.description.trim()) {
+                descDiv.innerHTML = `<strong>Task Notes:</strong><br>${escapeHtml(task.description)}`;
+                descDiv.style.display = 'block';
+            } else {
+                descDiv.style.display = 'none';
+            }
+            
+            // TODO: Check for other contacts associated with this task
+            // For now, hide the other contacts section
+            document.getElementById('explorerOtherContacts').style.display = 'none';
+        }
+        
+        function initializeEmailForm(task) {
+            // Clear previous email content
+            document.getElementById('emailTo').value = '';
+            document.getElementById('emailCC').value = '';
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailBody').value = '';
+            
+            // Clear any previous status messages
+            const existingStatus = document.querySelector('.email-status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+        }
+        
+        async function loadTaskDetails(task) {
+            // Reset fields to loading state
+            document.getElementById('explorerContactName').textContent = 'Loading...';
+            document.getElementById('explorerContactEmail').textContent = 'Loading...';
+            document.getElementById('explorerContactPhone').textContent = 'Loading...';
+            document.getElementById('explorerAccountName').textContent = 'Loading...';
+            
+            let contact = null;
+            let account = null;
+            
+            // Get contact and account from task relationship
+            if (task.targetable) {
+                if (task.targetable.type === 'contact') {
+                    contact = contacts[task.targetable.id];
+                    
+                    // Always fetch full contact details with all related data
+                    try {
+                        console.log('Fetching FULL contact data with all relations for ID:', task.targetable.id);
+                        const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${task.targetable.id}?include=sales_accounts,owner,avatar,contact_status,lifecycle_stage`;
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': `Token token=${API_KEY}`,
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('FULL contact data response:', data);
+                            console.log('Contact keys available:', Object.keys(data));
+                            
+                            // Extract the contact data properly
+                            if (data.contact) {
+                                contact = data.contact;
+                                console.log('Contact object keys:', Object.keys(contact));
+                                
+                                // Also check for sales_accounts in the response
+                                if (data.sales_accounts && data.sales_accounts.length > 0) {
+                                    console.log('Sales accounts found:', data.sales_accounts);
+                                    contact.sales_accounts = data.sales_accounts;
+                                    // Cache the first account as the primary account
+                                    account = data.sales_accounts[0];
+                                    accounts[account.id] = account;
+                                }
+                            } else {
+                                contact = data;
+                                console.log('Direct contact object keys:', Object.keys(contact));
+                            }
+                            
+                            contacts[contact.id] = contact; // Cache it
+                        } else {
+                            console.error('Full contact fetch failed:', response.status, response.statusText);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching full contact details:', error);
+                    }
+                    
+                    // Log what we have for debugging
+                    console.log('Contact data available:', contact);
+                    
+                    // Try to get account from multiple possible sources
+                    if (contact) {
+                        // Check if account was already loaded from the include
+                        if (!account && contact.sales_accounts && contact.sales_accounts.length > 0) {
+                            account = contact.sales_accounts[0];
+                            console.log('Using account from sales_accounts array:', account);
+                        }
+                        
+                        // Try to get from sales_account_id
+                        if (!account && contact.sales_account_id) {
+                            account = accounts[contact.sales_account_id];
+                            
+                            if (!account) {
+                                try {
+                                    console.log('Fetching account by sales_account_id:', contact.sales_account_id);
+                                    const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/sales_accounts/${contact.sales_account_id}`;
+                                    const response = await fetch(url, {
+                                        headers: {
+                                            'Authorization': `Token token=${API_KEY}`,
+                                            'Content-Type': 'application/json',
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        }
+                                    });
+                                    
+                                    if (response.ok) {
+                                        const data = await response.json();
+                                        account = data.sales_account || data;
+                                        accounts[account.id] = account; // Cache it
+                                        console.log('Fetched account data:', account);
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching account details:', error);
+                                }
+                            }
+                        }
+                        
+                        // Check what account-related fields we have in contact itself
+                        console.log('Contact account-related fields:', {
+                            sales_account_id: contact.sales_account_id,
+                            sales_accounts: contact.sales_accounts,
+                            company_name: contact.company_name,
+                            district: contact.district,
+                            organization_school_name: contact.organization_school_name
+                        });
+                    }
+                } else if (task.targetable.type === 'sales_account') {
+                    account = accounts[task.targetable.id];
+                }
+            }
+            
+            // Populate the mandatory fields with better data extraction
+            const contactName = contact ? 
+                (contact.display_name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown') : 
+                'Not assigned';
+            const contactEmail = contact?.email || 'Not provided';
+            const contactPhone = contact?.phone || contact?.mobile_number || contact?.work_number || 'Not provided';
+            
+            // Better account name extraction
+            let accountName = 'Not provided';
+            if (account?.name) {
+                accountName = account.name;
+            } else if (contact?.company_name) {
+                accountName = contact.company_name;
+            } else if (contact?.sales_accounts && contact.sales_accounts.length > 0) {
+                accountName = contact.sales_accounts[0].name;
+            } else if (contact?.district) {
+                accountName = contact.district;
+            } else if (contact?.organization_school_name) {
+                accountName = contact.organization_school_name;
+            }
+            
+            document.getElementById('explorerContactName').textContent = contactName;
+            document.getElementById('explorerContactEmail').textContent = contactEmail;
+            document.getElementById('explorerContactPhone').textContent = contactPhone;
+            document.getElementById('explorerAccountName').textContent = accountName;
+            
+            // Populate email form with contact information
+            if (contact && contact.email) {
+                document.getElementById('emailTo').value = contact.email;
+                
+                // Generate default subject based on task
+                const defaultSubject = `Re: ${window.currentTask?.title || 'Task Follow-up'}`;
+                document.getElementById('emailSubject').value = defaultSubject;
+            }
+            
+            // Store contact and account for later use
+            window.currentExplorerContact = contact;
+            window.currentExplorerAccount = account;
+            
+            // Populate other available fields
+            populateOtherFields(contact, account);
+            
+            // Log available fields for debugging
+            if (contact) {
+                const contactFields = Object.keys(contact).filter(k => contact[k]);
+                console.log('Available contact fields:', contactFields);
+                console.log('Contact field values:', contactFields.reduce((obj, key) => {
+                    obj[key] = contact[key];
+                    return obj;
+                }, {}));
+            }
+            if (account) {
+                console.log('Available account fields:', Object.keys(account).filter(k => account[k]));
+            }
+        }
+        
+        function populateOtherFields(contact, account) {
+            const customGrid = document.getElementById('customFieldsGrid');
+            
+            // Auto-detect ALL populated fields and display them immediately
+            const populatedFields = [];
+            
+            // Add contact fields that have data - with better value detection
+            if (contact) {
+                Object.keys(contact).forEach(key => {
+                    // Skip basic fields already shown in main section AND fields covered by dedicated sections below
+                    const skipFields = [
+                        'id', 'display_name', 'first_name', 'last_name', 'email', 'phone',
+                        // Skip fields covered by dedicated sections below
+                        'recent_note',  // Covered by "Contact Notes" section
+                        'last_contacted', 'last_contacted_mode', 'last_contacted_sales_activity_mode', 'last_contacted_via_sales_activity', // Covered by "Recent Activity Timeline"
+                        'emails', 'email',  // Covered by "Previous Emails" section  
+                        'active_sales_sequences', 'completed_sales_sequences', // Task/activity related, covered by timeline
+                        'activities', 'notes',  // Covered by dedicated sections
+                        'created_at', 'updated_at', 'last_assigned_at', // Timeline information
+                        'links', // Usually not useful for user context
+                        'avatar', 'is_deleted', 'external_id', // Technical fields
+                        'last_seen', 'first_seen_chat', 'last_seen_chat', 'total_sessions', // Chat/session data not needed for sales context
+                        'web_form_ids', 'mcr_id', 'system_tags', // Technical tracking data
+                        'subscription_status', 'subscription_types', 'unsubscription_reason', 'other_unsubscription_reason', // Email subscription stuff (covered by email section)
+                        'whatsapp_subscription_status', 'sms_subscription_status', 'amb_subscription_status', // Subscription statuses not critical for task context
+                        'first_campaign', 'first_medium', 'first_source', 'last_campaign', 'last_medium', 'last_source', 'latest_campaign', 'latest_medium', 'latest_source' // Attribution data - usually not relevant for task context
+                    ];
+                    
+                    if (!skipFields.includes(key)) {
+                        const value = contact[key];
+                        
+                        // Enhanced value checking - include more types of "real" data
+                        if (value !== null && value !== undefined && value !== '') {
+                            // Include numbers (even 0), booleans, non-empty strings
+                            let hasRealData = false;
+                            
+                            if (typeof value === 'string' && value.trim() !== '' && value !== 'Click to add') {
+                                hasRealData = true;
+                            } else if (typeof value === 'number') {
+                                hasRealData = true;
+                            } else if (typeof value === 'boolean') {
+                                hasRealData = true;
+                            } else if (Array.isArray(value) && value.length > 0) {
+                                hasRealData = true;
+                            } else if (typeof value === 'object' && Object.keys(value).length > 0) {
+                                hasRealData = true;
+                            }
+                            
+                            if (hasRealData) {
+                                populatedFields.push({
+                                    key: key,
+                                    label: formatFieldName(key),
+                                    value: value,
+                                    source: 'contact'
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Add account fields that have data
+            if (account) {
+                Object.keys(account).forEach(key => {
+                    if (!['id', 'name'].includes(key)) {
+                        const value = account[key];
+                        if (value && value !== '' && value !== null && value !== undefined) {
+                            if (Array.isArray(value) && value.length === 0) return;
+                            if (typeof value === 'object' && Object.keys(value).length === 0) return;
+                            
+                            populatedFields.push({
+                                key: key,
+                                label: `Account: ${formatFieldName(key)}`,
+                                value: value,
+                                source: 'account'
+                            });
+                        }
+                    }
+                });
+            }
+            
+            // Display populated fields immediately (no checkboxes needed)
+            if (populatedFields.length > 0) {
+                customGrid.innerHTML = '';
+                customGrid.style.display = 'grid';
+                
+                populatedFields.forEach(field => {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = 'field-item';
+                    
+                    // Format value for display with enhanced special handling
+                    let displayValue = field.value;
+                    
+                    // Special handling for complex FreshSales field types
+                    if (field.key === 'emails' && Array.isArray(displayValue)) {
+                        // Extract primary email from emails array
+                        const primaryEmail = displayValue.find(e => e.is_primary) || displayValue[0];
+                        displayValue = primaryEmail ? primaryEmail.value : 'No email';
+                    }
+                    else if (field.key === 'sales_accounts' && Array.isArray(displayValue)) {
+                        // Extract account names
+                        displayValue = displayValue.map(acc => acc.name).join(', ');
+                    }
+                    else if (field.key === 'tags' && Array.isArray(displayValue)) {
+                        // Format tags nicely
+                        displayValue = displayValue.join(', ');
+                    }
+                    else if (field.key === 'custom_field' && typeof displayValue === 'object') {
+                        // Extract meaningful custom fields
+                        const meaningfulFields = [];
+                        for (const [cfKey, cfValue] of Object.entries(displayValue)) {
+                            if (cfValue && cfValue !== null && cfValue !== '') {
+                                const cleanKey = cfKey.replace('cf_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                meaningfulFields.push(`${cleanKey}: ${cfValue}`);
+                            }
+                        }
+                        displayValue = meaningfulFields.length > 0 ? meaningfulFields.join(' | ') : 'No custom fields populated';
+                    }
+                    else if (field.key === 'subscription_types') {
+                        // Handle subscription types as array or string
+                        if (Array.isArray(displayValue)) {
+                            displayValue = displayValue.join(', ');
+                        } else if (typeof displayValue === 'string') {
+                            const subscriptionMap = {
+                                '1': 'Newsletter',
+                                '2': 'Promotional', 
+                                '3': 'Product updates',
+                                '4': 'Conferences & Events',
+                                '5': 'Non-marketing emails from our company'
+                            };
+                            const ids = displayValue.split(';');
+                            const names = ids.map(id => subscriptionMap[id.trim()] || `Unknown (${id})`);
+                            displayValue = names.join(', ');
+                        }
+                    }
+                    else if (field.key === 'subscription_status') {
+                        displayValue = displayValue === '1' || displayValue === 1 || displayValue === 'Subscribed' ? 'Subscribed' : 
+                                     displayValue === '0' || displayValue === 0 ? 'Not Subscribed' : displayValue;
+                    }
+                    else if (field.key === 'whatsapp_subscription_status' || field.key === 'sms_subscription_status') {
+                        const statusMap = { '1': 'Subscribed', '2': 'Not Subscribed', '0': 'Not Set' };
+                        displayValue = statusMap[displayValue.toString()] || displayValue;
+                    }
+                    else if (field.key === 'customer_fit') {
+                        const fitMap = { '1': 'Poor Fit', '2': 'Good Fit', '3': 'Excellent Fit' };
+                        displayValue = fitMap[displayValue.toString()] || displayValue;
+                    }
+                    else if (field.key.includes('_at') || field.key.includes('date')) {
+                        // Format dates nicely
+                        try {
+                            displayValue = new Date(displayValue).toLocaleString();
+                        } catch (e) {
+                            // Keep original if not a valid date
+                        }
+                    }
+                    else if (field.key === 'links' && typeof displayValue === 'object') {
+                        // Skip links object - too verbose
+                        return null;
+                    }
+                    // Format other value types
+                    else if (typeof displayValue === 'object' && displayValue !== null) {
+                        // For objects, try to extract meaningful information
+                        if (Object.keys(displayValue).length <= 3) {
+                            const entries = Object.entries(displayValue);
+                            displayValue = entries.map(([k, v]) => `${k}: ${v}`).join(', ');
+                        } else {
+                            displayValue = `[${Object.keys(displayValue).length} properties]`;
+                        }
+                    } else if (Array.isArray(displayValue)) {
+                        displayValue = displayValue.join(', ');
+                    }
+                    
+                    fieldDiv.innerHTML = `
+                        <div class="field-label">${field.label}</div>
+                        <div class="field-value">${escapeHtml(displayValue.toString())}</div>
+                    `;
+                    customGrid.appendChild(fieldDiv);
+                });
+                
+                // Hide the "Other Available Fields" section since we're auto-showing populated ones
+                const otherFieldsSection = document.querySelector('.other-fields-toggle');
+                if (otherFieldsSection) {
+                    otherFieldsSection.style.display = 'none';
+                }
+            } else {
+                customGrid.style.display = 'none';
+                // Show the toggle section if no auto-populated fields
+                const otherFieldsSection = document.querySelector('.other-fields-toggle');
+                if (otherFieldsSection) {
+                    otherFieldsSection.style.display = 'block';
+                }
+            }
+            
+            // Store current contact and account for later use
+            window.currentExplorerContact = contact;
+            window.currentExplorerAccount = account;
+        }
+        
+        function formatFieldName(key) {
+            // Special handling for common FreshSales fields
+            const specialFields = {
+                'job_title': 'Job Title',
+                'mobile_number': 'Mobile Number',
+                'work_number': 'Work Number',
+                'subscription_status': 'Subscription Status',
+                'subscription_types': 'Subscription Types',
+                'linkedin': 'LinkedIn',
+                'linkedin_url': 'LinkedIn URL', 
+                'city': 'City',
+                'state': 'State',
+                'country': 'Country',
+                'zipcode': 'Zip Code',
+                'lifecycle_stage': 'Lifecycle Stage',
+                'contact_status': 'Contact Status',
+                'sales_owner': 'Sales Owner',
+                'lead_source': 'Lead Source',
+                'organization_school_name': 'Organization/School Name',
+                'district': 'District',
+                'department': 'Department',
+                'role': 'Role',
+                'business_model_type': 'Business Model Type',
+                'school_grade_level': 'School Grade Level',
+                'annual_revenue': 'Annual Revenue',
+                'amount_paid': 'Amount Paid',
+                'created_at': 'Created At',
+                'updated_at': 'Updated At',
+                'last_contacted_time': 'Last Contacted',
+                'score': 'Score'
+            };
+            
+            if (specialFields[key]) {
+                return specialFields[key];
+            }
+            
+            return key
+                .replace(/custom_field_|cf_/g, '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
+        function toggleOtherFields() {
+            const content = document.getElementById('otherFieldsContent');
+            const toggle = document.querySelector('.other-fields-toggle');
+            const icon = document.getElementById('otherFieldsToggleIcon');
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                toggle.classList.remove('expanded');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('show');
+                toggle.classList.add('expanded');
+                icon.textContent = '▲';
+            }
+        }
+        
+        function updateDisplayedFields() {
+            const checkedBoxes = document.querySelectorAll('#otherFieldsList input[type="checkbox"]:checked');
+            const customGrid = document.getElementById('customFieldsGrid');
+            
+            if (checkedBoxes.length === 0) {
+                customGrid.style.display = 'none';
+                return;
+            }
+            
+            customGrid.innerHTML = '';
+            customGrid.style.display = 'grid';
+            
+            checkedBoxes.forEach(checkbox => {
+                const fieldKey = checkbox.dataset.field;
+                const source = checkbox.dataset.source;
+                const sourceObj = source === 'contact' ? window.currentExplorerContact : window.currentExplorerAccount;
+                const value = sourceObj?.[fieldKey] || 'Not provided';
+                
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'field-item';
+                fieldDiv.innerHTML = `
+                    <div class="field-label">${checkbox.nextElementSibling.textContent}</div>
+                    <div class="field-value ${!value || value === 'Not provided' ? 'empty' : ''}">${escapeHtml(value.toString())}</div>
+                `;
+                customGrid.appendChild(fieldDiv);
+            });
+        }
+        
+        async function loadTaskContext(task) {
+            const contact = task.targetable?.type === 'contact' ? 
+                contacts[task.targetable.id] || window.currentExplorerContact : null;
+            
+            console.log('Loading task context for task:', task);
+            console.log('Contact found:', contact);
+            console.log('Available contacts cache:', Object.keys(contacts));
+            
+            if (!contact) {
+                console.log('No contact found for task, showing no data message');
+                showNoContactData();
+                return;
+            }
+            
+            console.log('Loading context sections for contact:', contact.id, contact);
+            
+            // Load all sections concurrently
+            await Promise.all([
+                loadContactNotes(contact),
+                loadEmailHistory(contact.id),
+                loadTaskHistory(contact.id),
+                loadActivityTimeline(contact.id)
+            ]);
+        }
+        
+        function showNoContactData() {
+            document.getElementById('explorerContactNotes').innerHTML = '<div class="no-data">No contact associated with this task</div>';
+            document.getElementById('explorerEmails').innerHTML = '<div class="no-data">No contact associated with this task</div>';
+            document.getElementById('explorerTasks').innerHTML = '<div class="no-data">No contact associated with this task</div>';
+            document.getElementById('explorerTimeline').innerHTML = '<div class="no-data">No contact associated with this task</div>';
+        }
+        
+        async function loadContactNotes(contact) {
+            const notesDiv = document.getElementById('explorerContactNotes');
+            
+            try {
+                // Use the proven working approach: load notes via API like working dashboard
+                const notesUrl = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contact.id}/notes?include=creater&per_page=100`;
+                const response = await fetch(notesUrl, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const notes = data.notes || [];
+                    
+                    console.log('Contact notes loaded:', notes);
+                    
+                    if (notes.length > 0) {
+                        const notesHTML = notes.map(note => {
+                            const noteDate = new Date(note.created_at).toLocaleDateString();
+                            const noteText = note.description || '';
+                            const createdBy = note.creater ? note.creater.display_name : 'Unknown';
+                            
+                            return `
+                                <div class="context-item">
+                                    <div class="context-item-meta">${noteDate} by ${createdBy}</div>
+                                    <div class="context-item-content">${escapeHtml(noteText)}</div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        notesDiv.innerHTML = notesHTML;
+                    } else {
+                        notesDiv.innerHTML = '<div class="no-data">No contact notes found</div>';
+                    }
+                } else {
+                    console.log('Notes API failed:', response.status);
+                    notesDiv.innerHTML = '<div class="no-data">Could not load contact notes</div>';
+                }
+            } catch (error) {
+                console.error('Error loading contact notes:', error);
+                notesDiv.innerHTML = '<div class="no-data">Error loading contact notes</div>';
+            }
+        }
+        
+        async function loadEmailHistory(contactId) {
+            const emailsDiv = document.getElementById('explorerEmails');
+            
+            try {
+                // First, get Gmail emails for this contact using your working integration
+                let gmailEmails = [];
+                if (window.currentExplorerContact?.email) {
+                    try {
+                        console.log('Fetching Gmail emails for contact:', window.currentExplorerContact.email);
+                        const gmailResponse = await fetch('https://script.google.com/macros/s/AKfycby3nsP2K33sK4_-KFr9QdHQjR4SwSeTrtIeTpp4jGtV_Yhz9mo0gLaVnPtfUwDJcQG5nw/exec?email=' + encodeURIComponent(window.currentExplorerContact.email));
+                        
+                        if (gmailResponse.ok) {
+                            gmailEmails = await gmailResponse.json();
+                            console.log('Gmail emails received:', gmailEmails.length, 'emails');
+                        } else {
+                            console.log('Gmail API response not ok:', gmailResponse.status);
+                        }
+                    } catch (error) {
+                        console.log('Gmail integration error:', error);
+                    }
+                }
+                
+                // Then get FreshSales email activities
+                const endpoints = [
+                    `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}/activities?per_page=20`,
+                    `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/emails?contact_id=${contactId}&per_page=20`,
+                    `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/conversations?contact_id=${contactId}&per_page=20`
+                ];
+                
+                let emailActivities = [];
+                
+                for (const url of endpoints) {
+                    try {
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': `Token token=${API_KEY}`,
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Email endpoint response:', url, data);
+                            console.log('Response data keys:', Object.keys(data));
+                            
+                            // Handle activities endpoint
+                            if (data.activities) {
+                                emailActivities = data.activities.filter(activity => {
+                                    const isEmail = activity.action_type === 'EMAIL_SENT' || activity.action_type === 'EMAIL_RECEIVED';
+                                    if (isEmail) {
+                                        console.log('Found email activity:', activity);
+                                    }
+                                    return isEmail;
+                                });
+                                console.log(`Filtered ${emailActivities.length} email activities from ${data.activities.length} total activities`);
+                            }
+                            // Handle direct emails endpoint
+                            else if (data.emails) {
+                                emailActivities = data.emails;
+                                console.log(`Found ${emailActivities.length} emails from direct emails endpoint`);
+                            }
+                            // Handle conversations endpoint
+                            else if (data.conversations) {
+                                emailActivities = data.conversations;
+                                console.log(`Found ${emailActivities.length} conversations from conversations endpoint`);
+                            }
+                            // Handle other possible response structures
+                            else if (Array.isArray(data)) {
+                                emailActivities = data;
+                                console.log(`Found ${emailActivities.length} items from direct array response`);
+                            }
+                            
+                            if (emailActivities.length > 0) {
+                                console.log('Using endpoint:', url, 'with', emailActivities.length, 'email activities');
+                                break;
+                            }
+                        } else {
+                            console.log('Email endpoint failed:', url, response.status, response.statusText);
+                        }
+                    } catch (endpointError) {
+                        continue;
+                    }
+                }
+                
+                if (emailActivities.length > 0) {
+                    console.log('Processing email activities:', emailActivities);
+                    
+                    // Process emails and fetch actual content using email_id
+                    const emailsHTML = await Promise.all(emailActivities.map(async (email) => {
+                        console.log('Processing individual email:', email);
+                        console.log('Email processing details:', {
+                            emailId: email.id,
+                            actionType: email.action_type,
+                            actionData: email.action_data,
+                            rawEmail: email
+                        });
+                        
+                        const actionData = email.action_data || {};
+                        const direction = email.action_type === 'EMAIL_SENT' ? 'Sent' : 
+                                         email.action_type === 'EMAIL_RECEIVED' ? 'Received' : 'Email';
+                        const subject = actionData.subject || email.subject || 'No subject';
+                        const date = new Date(email.created_at || email.updated_at).toLocaleString();
+                        const emailStatus = actionData.status || email.status || 'Unknown';
+                        const emailCount = actionData.count || '';
+                        
+                        // Use the proven working approach: FreshSales doesn't store email content
+                        // Email content is in external systems (Gmail, Outlook, etc.)
+                        let emailBody = '';
+                        let fromEmail = '';
+                        let toEmail = '';
+                        
+                        // Match this FreshSales activity with Gmail emails
+                        if (gmailEmails && gmailEmails.length > 0) {
+                            // Find Gmail email that matches this FreshSales activity by subject or date
+                            const matchingEmail = gmailEmails.find(gmailEmail => {
+                                const gmailSubject = gmailEmail.subject || '';
+                                const fsSubject = subject || '';
+                                
+                                // Try to match by subject
+                                if (gmailSubject.toLowerCase().includes(fsSubject.toLowerCase()) || 
+                                    fsSubject.toLowerCase().includes(gmailSubject.toLowerCase())) {
+                                    return true;
+                                }
+                                
+                                // Try to match by approximate date (within same day)
+                                const gmailDate = new Date(gmailEmail.date);
+                                const fsDate = new Date(email.created_at);
+                                const dateDiff = Math.abs(gmailDate - fsDate) / (1000 * 60 * 60 * 24); // days
+                                
+                                return dateDiff < 1; // within 1 day
+                            });
+                            
+                            if (matchingEmail) {
+                                emailBody = matchingEmail.body || '';
+                                console.log('Found matching Gmail email with body length:', emailBody.length);
+                            }
+                        }
+                        
+                        // Fallback: Try to extract from activity data and other sources
+                        if (!fromEmail) {
+                            fromEmail = actionData.from_email || actionData.from || actionData.sender_email || 
+                                       email.from_email || email.from || '';
+                            // If still no from email, check if we can infer it from the direction
+                            if (!fromEmail && direction === 'Sent') {
+                                // For sent emails, the from email is likely the current user's email
+                                // We can try to get this from the contact data or use a placeholder
+                                fromEmail = 'You (via FreshSales)';
+                            }
+                        }
+                        
+                        if (!toEmail) {
+                            toEmail = actionData.to_email || actionData.to || actionData.recipient_email ||
+                                     email.to_email || email.to || '';
+                            // For emails related to this contact, the "to" is likely the contact's email
+                            if (!toEmail && window.currentExplorerContact?.email) {
+                                toEmail = window.currentExplorerContact.email;
+                            }
+                        }
+                        
+                        if (!emailBody) {
+                            // Try more variations for email body content from activity data
+                            emailBody = actionData.body || actionData.content || actionData.message || 
+                                       actionData.text || actionData.description || 
+                                       email.body || email.content || email.message || '';
+                            
+                            // If no body content available, show meaningful info
+                            if (!emailBody) {
+                                emailBody = `Email logged in FreshSales: "${subject}" (${emailStatus}). Full content available in your email system.`;
+                            }
+                        }
+                        
+                        const emailId = `email_${email.id || Math.random().toString(36).substr(2, 9)}`;
+                        const isLongEmail = emailBody.length > 500;
+                        const shortBody = emailBody.substring(0, 500);
+                        
+                        return `
+                            <div class="email-item">
+                                <div class="email-header">
+                                    <div class="email-subject">${escapeHtml(subject)}</div>
+                                    <div class="email-date">${date}</div>
+                                </div>
+                                <div class="email-meta">
+                                    <strong>${direction}</strong> • Status: ${emailStatus}
+                                    ${emailCount ? ` • Count: ${emailCount}` : ''}
+                                    ${fromEmail ? ` • From: ${escapeHtml(fromEmail)}` : ''}
+                                    ${toEmail ? ` • To: ${escapeHtml(toEmail)}` : ''}
+                                </div>
+                                ${emailBody ? `
+                                    <div class="email-body">
+                                        <div id="${emailId}_short">${escapeHtml(shortBody)}${isLongEmail ? '...' : ''}</div>
+                                        ${isLongEmail ? `
+                                            <div id="${emailId}_full" style="display: none;">${escapeHtml(emailBody)}</div>
+                                            <button class="show-more-btn" onclick="toggleEmailContent('${emailId}', this)" style="background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 12px; margin-top: 5px;">Show More</button>
+                                        ` : ''}
+                                    </div>
+                                ` : '<div class="email-body" style="font-style: italic; color: var(--text-secondary);">Email content not available</div>'}
+                            </div>
+                        `;
+                    }));
+                    
+                    emailsDiv.innerHTML = emailsHTML.join('');
+                } else {
+                    emailsDiv.innerHTML = '<div class="no-data">No email history found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading email history:', error);
+                emailsDiv.innerHTML = '<div class="no-data">Error loading email history</div>';
+            }
+        }
+        
+        async function loadTaskHistory(contactId) {
+            const tasksDiv = document.getElementById('explorerTasks');
+            
+            try {
+                // Try multiple endpoints for tasks
+                const endpoints = [
+                    `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks?targetable_type=Contact&targetable_id=${contactId}&per_page=20`,
+                    `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}/tasks?per_page=20`,
+                    `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks?contact_id=${contactId}&per_page=20`
+                ];
+                
+                let taskList = [];
+                
+                for (const url of endpoints) {
+                    try {
+                        console.log('Trying task endpoint:', url);
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': `Token token=${API_KEY}`,
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Task endpoint response:', url, data);
+                            
+                            taskList = data.tasks || data || [];
+                            if (taskList.length > 0) break;
+                        }
+                    } catch (endpointError) {
+                        continue;
+                    }
+                }
+                
+                // If no tasks from dedicated endpoints, extract from activity timeline
+                if (taskList.length === 0) {
+                    console.log('No tasks from endpoints, extracting from activities');
+                    try {
+                        const activitiesUrl = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}/activities?per_page=50`;
+                        const response = await fetch(activitiesUrl, {
+                            headers: {
+                                'Authorization': `Token token=${API_KEY}`,
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.activities) {
+                                // Extract task-related activities
+                                const taskActivities = data.activities.filter(activity => 
+                                    activity.action_type && (
+                                        activity.action_type.includes('TASK') ||
+                                        activity.targetable_type === 'Task' ||
+                                        (activity.action_data && (activity.action_data.title || activity.action_data.subject))
+                                    )
+                                );
+                                
+                                console.log('Found task activities:', taskActivities);
+                                
+                                taskList = taskActivities.map(activity => ({
+                                    id: activity.targetable_id || activity.id,
+                                    title: activity.action_data?.title || activity.action_data?.subject || `Task Activity (${activity.action_type})`,
+                                    description: activity.action_data?.description || '',
+                                    status: activity.action_type === 'TASK_COMPLETED' ? 1 : 0,
+                                    due_date: activity.action_data?.due_date || null,
+                                    created_at: activity.created_at,
+                                    owner: { display_name: 'From Activity Timeline' }
+                                }));
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Error extracting tasks from activities:', error);
+                    }
+                }
+                
+                if (taskList.length > 0) {
+                    const tasksHTML = taskList.map(taskItem => {
+                        const status = taskItem.status === 1 ? 'Completed' : 'Open';
+                        const dueDate = taskItem.due_date ? new Date(taskItem.due_date).toLocaleString() : 'No due date';
+                        const created = new Date(taskItem.created_at).toLocaleString();
+                        const owner = taskItem.owner ? taskItem.owner.display_name : 'Unassigned';
+                        
+                        return `
+                            <div class="task-item-detail">
+                                <div class="email-header">
+                                    <div class="email-subject">${escapeHtml(taskItem.title)}</div>
+                                    <div class="email-date">${created}</div>
+                                </div>
+                                <div class="email-meta">
+                                    <strong>Status:</strong> ${status} • <strong>Due:</strong> ${dueDate} • <strong>Owner:</strong> ${owner}
+                                </div>
+                                ${taskItem.description ? `<div class="email-body">${escapeHtml(taskItem.description)}</div>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    tasksDiv.innerHTML = tasksHTML;
+                } else {
+                    tasksDiv.innerHTML = '<div class="no-data">No task history found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading task history:', error);
+                tasksDiv.innerHTML = '<div class="no-data">Error loading task history</div>';
+            }
+        }
+        
+        async function loadActivityTimeline(contactId) {
+            const timelineDiv = document.getElementById('explorerTimeline');
+            
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}/activities?per_page=15`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const activities = data.activities || [];
+                    
+                    if (activities.length > 0) {
+                        // For task-related activities, try to fetch task details
+                        const timelineHTML = await Promise.all(activities.map(async activity => {
+                            const actionType = activity.action_type || 'Activity';
+                            const actionData = activity.action_data || {};
+                            const date = new Date(activity.created_at).toLocaleString();
+                            
+                            let content = '';
+                            let type = actionType;
+                            
+                            // Handle different activity types with better detail
+                            if (actionType === 'EMAIL_SENT' || actionType === 'EMAIL_RECEIVED') {
+                                type = actionType === 'EMAIL_SENT' ? 'Email Sent' : 'Email Received';
+                                
+                                // Enhanced email content extraction for timeline
+                                const subject = actionData.subject || actionData.title || 'Email activity';
+                                const fromEmail = actionData.from_email || actionData.from || actionData.sender_email || 
+                                                 actionData.from_address || '';
+                                const toEmail = actionData.to_email || actionData.to || actionData.recipient_email || 
+                                               actionData.to_address || '';
+                                const emailBody = actionData.body || actionData.content || actionData.text_body || 
+                                                 actionData.html_body || actionData.message || '';
+                                
+                                // Build comprehensive email timeline entry
+                                content = `"${subject}"`;
+                                if (fromEmail || toEmail) {
+                                    content += '<br><small>';
+                                    if (fromEmail) content += `From: ${fromEmail}`;
+                                    if (fromEmail && toEmail) content += ' • ';
+                                    if (toEmail) content += `To: ${toEmail}`;
+                                    content += '</small>';
+                                }
+                                
+                                if (emailBody && emailBody.trim()) {
+                                    const shortBody = emailBody.substring(0, 150);
+                                    content += `<br><div style="margin-top: 8px; padding: 8px; background: var(--bg-secondary); border-radius: 4px; font-size: 0.9em;">${escapeHtml(shortBody)}${emailBody.length > 150 ? '...' : ''}</div>`;
+                                }
+                                
+                                if (actionData.status) {
+                                    content += `<small><br>Status: ${actionData.status}</small>`;
+                                }
+                            } else if (actionType === 'TASK_CREATED' || actionType === 'TASK_UPDATED' || actionType === 'TASK_COMPLETED') {
+                                type = actionType.replace('TASK_', 'Task ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                                
+                                // Try to get task details
+                                const taskId = activity.actionable_id;
+                                if (taskId) {
+                                    try {
+                                        const taskUrl = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks/${taskId}`;
+                                        const taskResponse = await fetch(taskUrl, {
+                                            headers: {
+                                                'Authorization': `Token token=${API_KEY}`,
+                                                'Content-Type': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                            }
+                                        });
+                                        
+                                        if (taskResponse.ok) {
+                                            const taskData = await taskResponse.json();
+                                            const task = taskData.task || taskData;
+                                            content = `"${task.title}"${task.description ? ' - ' + task.description.substring(0, 100) : ''}`;
+                                        } else {
+                                            content = actionData.subject || actionData.content || 'Task activity';
+                                        }
+                                    } catch (taskError) {
+                                        content = actionData.subject || actionData.content || 'Task activity';
+                                    }
+                                } else {
+                                    content = actionData.subject || actionData.content || 'Task activity';
+                                }
+                            } else if (actionType === 'DEAL_CREATED' || actionType === 'DEAL_UPDATED') {
+                                type = actionType.replace('DEAL_', 'Deal ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                                content = actionData.name || actionData.subject || 'Deal activity';
+                            } else if (actionType === 'NOTE_ADDED') {
+                                type = 'Note Added';
+                                
+                                // Enhanced note content extraction
+                                const noteContent = actionData.content || actionData.notes || actionData.note || 
+                                                   actionData.description || actionData.text || actionData.body || '';
+                                
+                                if (noteContent && noteContent.trim()) {
+                                    const shortNote = noteContent.substring(0, 200);
+                                    content = `<div style="margin-top: 4px; padding: 8px; background: var(--bg-secondary); border-radius: 4px;">${escapeHtml(shortNote)}${noteContent.length > 200 ? '...' : ''}</div>`;
+                                } else {
+                                    content = 'Note added to contact';
+                                }
+                            } else {
+                                // Generic activity handling
+                                type = actionType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                                content = actionData.subject || actionData.content || actionData.notes || 
+                                         actionData.description || actionData.title || `${type} activity`;
+                            }
+                            
+                            return `
+                                <div class="context-item">
+                                    <div class="context-item-header">
+                                        <span>${type}</span>
+                                        <span class="context-date">${date}</span>
+                                    </div>
+                                    <div class="context-item-content">${content}</div>
+                                </div>
+                            `;
+                        }));
+                        
+                        timelineDiv.innerHTML = (await Promise.all(timelineHTML)).join('');
+                    } else {
+                        timelineDiv.innerHTML = '<div class="no-data">No recent activity found</div>';
+                    }
+                } else {
+                    timelineDiv.innerHTML = '<div class="no-data">Unable to load activity timeline</div>';
+                }
+            } catch (error) {
+                console.error('Error loading activity timeline:', error);
+                timelineDiv.innerHTML = '<div class="no-data">Error loading activity timeline</div>';
+            }
+        }
+        
+        
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const title = content.previousElementSibling;
+            const toggle = title.querySelector('.section-toggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+                toggle.classList.remove('collapsed');
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+                toggle.classList.add('collapsed');
+            }
+        }
+        
+        function navigateToSection(sectionId) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked nav item
+            event.currentTarget.classList.add('active');
+            
+            // Scroll to the section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // If section is collapsible and collapsed, expand it
+                if (sectionId === 'contactDetailsSection') {
+                    const contactContent = document.getElementById('contactDetailsContent');
+                    const contactToggle = document.getElementById('contactDetailsToggle');
+                    if (contactContent.style.display === 'none') {
+                        contactContent.style.display = 'block';
+                        contactToggle.textContent = '▼';
+                    }
+                } else if (sectionId === 'nextStepsSection') {
+                    const nextStepsContent = document.getElementById('nextStepsContent');
+                    const nextStepsToggle = document.getElementById('nextStepsToggle');
+                    if (nextStepsContent.style.display === 'none') {
+                        nextStepsContent.style.display = 'block';
+                        nextStepsToggle.textContent = '▼';
+                    }
+                }
+            }
+        }
+        
+        function closeTaskExplorer() {
+            document.getElementById('taskExplorerModal').classList.remove('show');
+            
+            // Reset the other fields section
+            const otherFieldsContent = document.getElementById('otherFieldsContent');
+            const otherFieldsToggle = document.querySelector('.other-fields-toggle');
+            const otherFieldsToggleIcon = document.getElementById('otherFieldsToggleIcon');
+            const customFieldsGrid = document.getElementById('customFieldsGrid');
+            
+            if (otherFieldsContent) otherFieldsContent.classList.remove('show');
+            if (otherFieldsToggle) otherFieldsToggle.classList.remove('expanded');
+            if (otherFieldsToggleIcon) otherFieldsToggleIcon.textContent = '▼';
+            if (customFieldsGrid) customFieldsGrid.style.display = 'none';
+            
+            // Reset all context sections to expanded
+            ['explorerContactNotes', 'explorerEmails', 'explorerTasks', 'explorerTimeline'].forEach(id => {
+                const content = document.getElementById(id);
+                const title = content.previousElementSibling;
+                const toggle = title.querySelector('.section-toggle');
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+                toggle.classList.remove('collapsed');
+            });
+        }
+
+        function composeEmail(event, email) {
+            event.stopPropagation();
+            window.open(`mailto:${email}`, '_blank');
+        }
+
+        function openSettings() {
+            document.getElementById('settingsPanel').classList.add('open');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.remove('open');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('tn_api_key');
+                localStorage.removeItem('tn_domain');
+                localStorage.removeItem('tn_preferences');
+                API_KEY = '';
+                BASE_URL = '';
+                showSetup();
+            }
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('statusMessage');
+            container.innerHTML = `
+                <div class="status-message status-${type}">
+                    ${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'} ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleEmailContent(emailId, button) {
+            const shortDiv = document.getElementById(`${emailId}_short`);
+            const fullDiv = document.getElementById(`${emailId}_full`);
+            
+            if (fullDiv.style.display === 'none') {
+                // Show full content
+                shortDiv.style.display = 'none';
+                fullDiv.style.display = 'block';
+                button.textContent = 'Show Less';
+            } else {
+                // Show short content
+                shortDiv.style.display = 'block';
+                fullDiv.style.display = 'none';
+                button.textContent = 'Show More';
+            }
+        }
+
+        // Contact Search Functions
+        let searchTimeout = null;
+        let searchCache = new Map();
+
+        async function handleContactSearch(e) {
+            const query = e.target.value.trim();
+            const resultsDiv = document.getElementById('contactSearchResults');
+            
+            if (query.length < 2) {
+                hideContactResults();
+                return;
+            }
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Debounce search
+            searchTimeout = setTimeout(async () => {
+                await searchContacts(query);
+            }, 300);
+        }
+
+        async function searchContacts(query) {
+            const resultsDiv = document.getElementById('contactSearchResults');
+            
+            // Check cache first
+            if (searchCache.has(query)) {
+                displaySearchResults(searchCache.get(query));
+                return;
+            }
+            
+            // Show loading
+            resultsDiv.innerHTML = '<div class="search-loading">Searching contacts...</div>';
+            resultsDiv.classList.add('show');
+            
+            try {
+                // Test different contact API approaches since search is still restricted
+                console.log(`Testing contact API access for user ${window.currentUserId} with query: "${query}"`);
+                
+                // Use the working search endpoint
+                const searchUrl = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/search?include=contact&q=${encodeURIComponent(query)}`;
+                console.log('Using working search endpoint:', searchUrl);
+                
+                const response = await fetch(searchUrl, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Search response:', data);
+                    
+                    // The response is an array of contacts directly
+                    let allContacts = Array.isArray(data) ? data : [];
+                    
+                    console.log(`Found ${allContacts.length} contacts from search`);
+                    
+                    if (allContacts.length > 0) {
+                        // Filter to only show contacts you own (as safety measure)
+                        const ownedContacts = allContacts.filter(contact => {
+                            // If owner info is available, filter by it
+                            if (contact.owner && contact.owner.id) {
+                                return contact.owner.id === window.currentUserId;
+                            }
+                            if (contact.owner_id) {
+                                return contact.owner_id === window.currentUserId;
+                            }
+                            // If no owner info, include it (let user decide)
+                            return true;
+                        });
+                        
+                        console.log(`Filtered to ${ownedContacts.length} owned contacts`);
+                        
+                        if (ownedContacts.length > 0) {
+                            searchCache.set(query, ownedContacts);
+                            displaySearchResults(ownedContacts);
+                            console.log(`Successfully displaying ${ownedContacts.length} contacts`);
+                            return; // Success, exit early
+                        }
+                    }
+                }
+                
+                // If we reach here, the API search didn't return owned contacts
+                console.log('API search returned no owned contacts, falling back to cached contacts');
+                
+            } catch (error) {
+                console.error('Error searching contacts:', error);
+            }
+            
+            // Final fallback to cached contacts (runs in both success and error cases if API didn't work)
+            const cachedMatches = Object.values(contacts).filter(contact => {
+                const name = (contact.display_name || contact.first_name + ' ' + contact.last_name || '').toLowerCase();
+                const email = (contact.email || '').toLowerCase();
+                const company = (contact.company_name || '').toLowerCase();
+                const jobTitle = (contact.job_title || '').toLowerCase();
+                const queryLower = query.toLowerCase();
+                
+                return name.includes(queryLower) || 
+                       email.includes(queryLower) || 
+                       company.includes(queryLower) ||
+                       jobTitle.includes(queryLower);
+            });
+            
+            if (cachedMatches.length > 0) {
+                searchCache.set(query, cachedMatches.slice(0, 10));
+                displaySearchResults(cachedMatches.slice(0, 10));
+            } else {
+                showNoResultsMessage(query);
+            }
+        }
+        
+        function showNoResultsMessage(query) {
+            const resultsDiv = document.getElementById('contactSearchResults');
+            resultsDiv.innerHTML = `
+                <div class="search-no-results">
+                    No contacts found for "${escapeHtml(query)}". 
+                    <br><br>
+                    <strong>Search includes:</strong><br>
+                    • Contacts you own in FreshSales<br>
+                    • Contacts associated with your tasks<br>
+                    <br>
+                    <strong>Tips:</strong><br>
+                    • Try searching by first name only<br>
+                    • Check spelling matches FreshSales exactly<br>
+                    • Ensure you are the contact owner in FreshSales<br>
+                    <br>
+                    <div style="margin-top: 12px;">
+                        <button onclick="enterContactManually('${escapeHtml(query)}')" class="btn btn-secondary" style="font-size: 13px;">
+                            Enter Contact ID Manually
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load all contacts into cache for local searching
+        async function loadAllContacts() {
+            console.log('Loading all contacts for search...');
+            try {
+                // Load contacts in batches to avoid hitting API limits
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts?per_page=100&include=sales_accounts`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const newContacts = data.contacts || [];
+                    
+                    console.log(`Loaded ${newContacts.length} contacts for search`);
+                    
+                    // Add to contacts cache
+                    newContacts.forEach(contact => {
+                        contacts[contact.id] = contact;
+                    });
+                    
+                    return newContacts;
+                } else {
+                    console.error('Failed to load contacts:', response.status, response.statusText);
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                return [];
+            }
+        }
+
+        function displaySearchResults(results) {
+            const resultsDiv = document.getElementById('contactSearchResults');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="search-no-results">No contacts found</div>';
+                resultsDiv.classList.add('show');
+                return;
+            }
+            
+            const html = results.map(contact => {
+                // Handle different API response formats
+                const name = contact.name || contact.display_name || 
+                           (contact.first_name && contact.last_name ? `${contact.first_name} ${contact.last_name}` : '') || 
+                           'Unknown';
+                const email = contact.email || '';
+                const company = contact.company_name || contact.account_name || contact.job_title || contact.title || '';
+                
+                return `
+                    <div class="search-result-item" onclick="selectContact(${contact.id}, '${escapeHtml(name)}')">
+                        <div class="search-result-name">${escapeHtml(name)}</div>
+                        <div class="search-result-details">
+                            ${email ? escapeHtml(email) : ''}
+                            ${email && company ? ' • ' : ''}
+                            ${company ? escapeHtml(company) : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+        }
+
+        async function selectContact(contactId, contactName) {
+            hideContactResults();
+            
+            // Try to get full contact details
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    selectedContactForTask = data.contact;
+                    showContactConfirmation(selectedContactForTask);
+                } else {
+                    // Fallback to basic info if detailed fetch fails
+                    selectedContactForTask = {
+                        id: contactId,
+                        display_name: contactName
+                    };
+                    showContactConfirmation(selectedContactForTask);
+                }
+            } catch (error) {
+                console.error('Error fetching contact details:', error);
+                // Fallback to basic info
+                selectedContactForTask = {
+                    id: contactId,
+                    display_name: contactName
+                };
+                showContactConfirmation(selectedContactForTask);
+            }
+        }
+        
+        function showContactConfirmation(contact) {
+            const detailsDiv = document.getElementById('contactDetailsDisplay');
+            
+            // Handle different API response formats for contact details
+            const name = contact.name || contact.display_name || 
+                        `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown';
+            const email = contact.email || 'Not provided';
+            const phone = contact.phone || contact.mobile_number || contact.work_number || 'Not provided';
+            const company = contact.company_name || contact.account_name || 
+                           (contact.sales_accounts && contact.sales_accounts[0] ? contact.sales_accounts[0].name : '') || 
+                           'Not provided';
+            const jobTitle = contact.job_title || contact.title || 'Not provided';
+            const address = contact.address || 
+                           (contact.city && contact.state ? `${contact.city}, ${contact.state}` : '') || 
+                           'Not provided';
+            
+            detailsDiv.innerHTML = `
+                <div class="contact-detail-row">
+                    <div class="contact-detail-label">Name:</div>
+                    <div class="contact-detail-value">${escapeHtml(name)}</div>
+                </div>
+                <div class="contact-detail-row">
+                    <div class="contact-detail-label">Email:</div>
+                    <div class="contact-detail-value">${escapeHtml(email)}</div>
+                </div>
+                <div class="contact-detail-row">
+                    <div class="contact-detail-label">Phone:</div>
+                    <div class="contact-detail-value">${escapeHtml(phone)}</div>
+                </div>
+                <div class="contact-detail-row">
+                    <div class="contact-detail-label">Company:</div>
+                    <div class="contact-detail-value">${escapeHtml(company)}</div>
+                </div>
+                <div class="contact-detail-row">
+                    <div class="contact-detail-label">Job Title:</div>
+                    <div class="contact-detail-value">${escapeHtml(jobTitle)}</div>
+                </div>
+                <div class="contact-detail-row">
+                    <div class="contact-detail-label">Address:</div>
+                    <div class="contact-detail-value">${escapeHtml(address)}</div>
+                </div>
+            `;
+            
+            document.getElementById('contactConfirmModal').classList.add('show');
+        }
+        
+        function confirmContactSelection() {
+            if (selectedContactForTask) {
+                const name = selectedContactForTask.display_name || 
+                           `${selectedContactForTask.first_name || ''} ${selectedContactForTask.last_name || ''}`.trim() || 
+                           'Unknown';
+                
+                document.getElementById('quickTaskContact').value = name;
+                document.getElementById('selectedContactId').value = selectedContactForTask.id;
+                document.getElementById('contactConfirmModal').classList.remove('show');
+                selectedContactForTask = null;
+            }
+        }
+        
+        function cancelContactSelection() {
+            document.getElementById('contactConfirmModal').classList.remove('show');
+            selectedContactForTask = null;
+        }
+
+        function hideContactResults() {
+            setTimeout(() => {
+                document.getElementById('contactSearchResults').classList.remove('show');
+            }, 150);
+        }
+
+        // Remove the old updateContactDropdown function since we don't need it anymore
+        function updateContactDropdown() {
+            // No longer needed - we use search instead
+        }
+
+        // Email and Task Workflow Functions
+        async function loadEmailSignature() {
+            try {
+                // Try to get user profile to extract signature
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/users/me`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    const user = userData.user || userData;
+                    
+                    // Build a basic signature
+                    let signature = '\n\nBest regards,\n';
+                    if (user.display_name || user.name) {
+                        signature += `${user.display_name || user.name}\n`;
+                    }
+                    if (user.job_title) {
+                        signature += `${user.job_title}\n`;
+                    }
+                    if (user.phone || user.mobile_number) {
+                        signature += `Phone: ${user.phone || user.mobile_number}\n`;
+                    }
+                    if (user.email) {
+                        signature += `Email: ${user.email}\n`;
+                    }
+                    
+                    // Append to current email body
+                    const currentBody = document.getElementById('emailBody').value;
+                    document.getElementById('emailBody').value = currentBody + signature;
+                    
+                    showEmailStatus('Signature loaded successfully!', 'success');
+                } else {
+                    // Fallback basic signature
+                    const basicSignature = '\n\nBest regards,\n[Your Name]\n[Your Title]\nThe Juice';
+                    const currentBody = document.getElementById('emailBody').value;
+                    document.getElementById('emailBody').value = currentBody + basicSignature;
+                    
+                    showEmailStatus('Basic signature template loaded', 'success');
+                }
+            } catch (error) {
+                console.error('Error loading signature:', error);
+                showEmailStatus('Could not load signature. You can add one manually.', 'error');
+            }
+        }
+
+        async function generateAIContext() {
+            try {
+                const contact = window.currentExplorerContact;
+                const account = window.currentExplorerAccount;
+                const task = window.currentTask;
+                
+                if (!contact) {
+                    showEmailStatus('No contact information available for context generation', 'error');
+                    return;
+                }
+                
+                // Build context similar to working dashboard
+                let context = `CONTACT CONTEXT:\n`;
+                context += `- Name: ${contact.display_name || contact.first_name + ' ' + contact.last_name || 'Unknown'}\n`;
+                context += `- Email: ${contact.email || 'Not available'}\n`;
+                if (account) {
+                    context += `- School/District: ${account.name}\n`;
+                }
+                if (contact.job_title) {
+                    context += `- Title: ${contact.job_title}\n`;
+                }
+                
+                context += `\nCURRENT TASK:\n`;
+                context += `- Task: ${task.title}\n`;
+                if (task.description) {
+                    context += `- Notes: ${task.description}\n`;
+                }
+                context += `- Due: ${new Date(task.due_date).toLocaleDateString()}\n`;
+                
+                context += `\nPlease generate a professional K-12 EdTech sales email that references the task and moves the conversation forward appropriately.`;
+                
+                // Copy to clipboard
+                try {
+                    await navigator.clipboard.writeText(context);
+                    showEmailStatus('AI context copied to clipboard!', 'success');
+                } catch (err) {
+                    // Fallback: show context in alert
+                    alert('AI Context:\n\n' + context);
+                    showEmailStatus('Context displayed (clipboard not available)', 'success');
+                }
+            } catch (error) {
+                console.error('Error generating AI context:', error);
+                showEmailStatus('Error generating AI context', 'error');
+            }
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('emailTo').value;
+            const cc = document.getElementById('emailCC').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+            
+            if (!to || !subject || !body) {
+                showEmailStatus('Please fill in all required fields (To, Subject, Message)', 'error');
+                return;
+            }
+            
+            try {
+                showEmailStatus('Sending email...', 'sending');
+                document.getElementById('sendEmailBtn').disabled = true;
+                
+                // Prepare email data for FreshSales
+                const emailData = {
+                    conversation: {
+                        subject: subject,
+                        body: body,
+                        type: 'email_outgoing',
+                        targetable_type: 'Contact',
+                        targetable_id: window.currentExplorerContact?.id
+                    }
+                };
+                
+                // Add CC if provided
+                if (cc) {
+                    emailData.conversation.cc = cc;
+                }
+                
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/conversations`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(emailData)
+                });
+                
+                if (response.ok) {
+                    showEmailStatus('Email sent successfully!', 'success');
+                    
+                    // Clear the form
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailBody').value = '';
+                    document.getElementById('emailCC').value = '';
+                    
+                    // Auto-populate next email subject
+                    setTimeout(() => {
+                        const defaultSubject = `Re: ${window.currentTask?.title || 'Task Follow-up'}`;
+                        document.getElementById('emailSubject').value = defaultSubject;
+                    }, 1000);
+                    
+                } else {
+                    const errorData = await response.text();
+                    console.error('Email send failed:', response.status, errorData);
+                    showEmailStatus('Failed to send email. Please check your permissions.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error sending email:', error);
+                showEmailStatus('Error sending email. Please try again.', 'error');
+            } finally {
+                document.getElementById('sendEmailBtn').disabled = false;
+            }
+        }
+
+        async function markTaskComplete() {
+            try {
+                const task = window.currentTask;
+                if (!task) return;
+                
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/tasks/${task.id}`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        task: { status: 1 }
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage('Task marked as complete!', 'success');
+                    
+                    // Update UI
+                    document.getElementById('explorerTaskStatus').innerHTML = '<span style="color: #4caf50; font-weight: 600;">Completed</span>';
+                    
+                    // Refresh task list
+                    setTimeout(() => {
+                        loadDashboardData();
+                    }, 1000);
+                    
+                } else {
+                    showMessage('Failed to mark task as complete', 'error');
+                }
+            } catch (error) {
+                console.error('Error completing task:', error);
+                showMessage('Error completing task', 'error');
+            }
+        }
+
+        async function completeAndCreateNew() {
+            try {
+                // First mark current task as complete
+                await markTaskComplete();
+                
+                // Show new task creation form
+                showNewTaskForm();
+                
+            } catch (error) {
+                console.error('Error in complete and create new:', error);
+                showMessage('Error completing task', 'error');
+            }
+        }
+
+        function showNewTaskForm() {
+            const currentTask = window.currentTask;
+            const contact = window.currentExplorerContact;
+            
+            // Auto-populate new task form with previous task details
+            document.getElementById('quickTaskTitle').value = `Follow up: ${currentTask.title}`;
+            if (contact) {
+                document.getElementById('quickTaskContact').value = contact.display_name || 
+                    `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown';
+                document.getElementById('selectedContactId').value = contact.id;
+            }
+            
+            // Set due date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0);
+            document.getElementById('quickTaskDue').value = tomorrow.toISOString().slice(0, 16);
+            
+            // Show the quick task form
+            document.getElementById('quickTaskForm').style.display = 'block';
+            
+            // Scroll to and focus on the form
+            document.getElementById('quickTaskForm').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('quickTaskTitle').focus();
+            
+            showMessage('Task completed! Please create your follow-up task below.', 'success');
+        }
+
+        function showEmailStatus(message, type) {
+            // Remove any existing status
+            const existingStatus = document.querySelector('.email-status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            // Create new status element
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `email-status ${type}`;
+            statusDiv.textContent = message;
+            
+            // Insert after email actions
+            const emailActions = document.querySelector('.email-actions');
+            emailActions.parentNode.insertBefore(statusDiv, emailActions.nextSibling);
+            
+            // Auto-remove success/error messages after 5 seconds
+            if (type !== 'sending') {
+                setTimeout(() => {
+                    if (statusDiv.parentNode) {
+                        statusDiv.remove();
+                    }
+                }, 5000);
+            }
+        }
+
+        // Update the toggleSection function to handle the new collapsible Contact Details
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const toggle = content.previousElementSibling.querySelector('.section-toggle');
+            
+            if (content.style.display === 'none' || !content.style.display) {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+                toggle.classList.remove('collapsed');
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+                toggle.classList.add('collapsed');
+            }
+        }
+        
+        // Allow manual contact entry when search fails
+        async function enterContactManually(searchQuery) {
+            const contactId = prompt(`Enter the FreshSales Contact ID for "${searchQuery}":\n\nYou can find this in FreshSales by:\n1. Opening the contact's profile\n2. Looking at the URL (the number after /contacts/)\n3. Or checking the contact's details`);
+            
+            if (!contactId || !contactId.trim()) {
+                return;
+            }
+            
+            try {
+                // Try to fetch the contact by ID
+                const url = `https://cors-anywhere.herokuapp.com/https://${BASE_URL}/api/contacts/${contactId}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Token token=${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const contact = data.contact || data;
+                    
+                    // Add to cache
+                    contacts[contact.id] = contact;
+                    
+                    // Select this contact
+                    const name = contact.display_name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown';
+                    selectContact(contact.id, name);
+                    
+                    // Hide search results
+                    document.getElementById('contactSearchResults').classList.remove('show');
+                    
+                    showMessage('Contact loaded successfully!', 'success');
+                } else {
+                    alert('Could not load contact. Please check the ID and try again.');
+                }
+            } catch (error) {
+                console.error('Error loading contact:', error);
+                alert('Error loading contact. Please ensure the ID is correct.');
+            }
+        }
+    </script>
+</body>
+</html>
